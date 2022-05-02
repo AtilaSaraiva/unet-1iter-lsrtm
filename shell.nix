@@ -8,7 +8,9 @@ with import sources.nixpkgs {
 let
   my-python-packages = python-packages: with python-packages; [
     matplotlib
-    numpy
+    devito
+    curvelops
+    tensorflow
     # other python packages you want
   ];
   python-with-my-packages = python3.withPackages my-python-packages;
@@ -20,5 +22,8 @@ mkShell {
   ];
 
   shellHooks = ''
+    export DEVITO_LOGGING=DEBUG
+    export DEVITO_ARCH="gcc"
+    export DEVITO_LANGUAGE="openmp"
   '';
 }
