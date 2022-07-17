@@ -10,7 +10,8 @@ let
     matplotlib
     devito
     curvelops
-    tensorflow
+    pytorch
+    pytorch-lightning
     # other python packages you want
   ];
   python-with-my-packages = python3.withPackages my-python-packages;
