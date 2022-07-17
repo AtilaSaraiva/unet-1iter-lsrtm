@@ -1,5 +1,6 @@
 { sources ? import ./nix/sources.nix }:
 with import sources.nixpkgs {
+  config.allowUnfree = true;
   overlays = [
     (import (builtins.fetchTarball https://github.com/AtilaSaraiva/myNixPythonPackages/archive/main.tar.gz))
   ];
