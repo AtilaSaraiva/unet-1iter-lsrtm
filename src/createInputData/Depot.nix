@@ -477,9 +477,9 @@
     };
     "registries/General" = pkgs.fetchzip {
       "name" = "registry-General";
-      "sha256" = "sha256-kb3aZOeRpKeU8ZbRsRqGJMxE5IyApbXQCHNPxI7085s=";
+      "sha256" = "sha256-oLzS0wd/W6r9ywqjQZqIxk22hJjJS2OHEx4jGjYtK6k=";
       "stripRoot" = false;
-      "url" = "https://pkg.julialang.org/registry/23338594-aafe-5451-b93e-139f81909106/f39015b493fcb78ac82d8c9ba9fef97443076049#registry.tar.gz";
+      "url" = "https://pkg.julialang.org/registry/23338594-aafe-5451-b93e-139f81909106/6e6c87d609ca6f1eab4ec2d22ad0b9df65f635b4#registry.tar.gz";
     };
   };
 }

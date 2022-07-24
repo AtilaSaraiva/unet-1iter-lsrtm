@@ -14,6 +14,8 @@ using JUDI, PyPlot, LinearAlgebra, HDF5
 #+ echo = false; results = "hidden"
 close("all")
 
+dataFolder = "../../data/"
+
 #' # Create a JUDI model structure
 #' In JUDI, a `Model` structure contains the grid information (origin, spacing, number of gridpoints)
 #' and the physical parameters. The squared slowness is always required as the base physical parameter for propagation. In addition,
@@ -34,8 +36,12 @@ v0 = ones(Float32,n) .+ 0.5f0
 v[:,Int(round(end/2)):end] .= 3.5f0
 rho = (v0 .+ .5f0) ./ 2
 
+# Save velocity field
+h5open(dataFolder*"vel.h5", "w") do file
+    write(file, "m", reshape(v, n))
+    write(file, "d", collect(d))
+end
 imshow(v')
-show()
 
 # Slowness squared [s^2/km^2]
 m  = (1f0 ./ v).^2
@@ -197,9 +203,15 @@ ylabel("Depth (m)")
 title("RTM image")
 display(fig)
 
+# Save migrated image
+h5open(dataFolder*"rtm.h5", "w") do file
+    write(file, "m", rtm.data)
+    write(file, "d", collect(d))
+end
 
-# Save final velocity model, function value and history
-h5open("rtm.h5", "w") do file
-    write(file, "x", rtm)
+# Save remigrated image
+h5open(dataFolder*"rtm_remig.h5", "w") do file
+    write(file, "m", rtm_remig.data)
+    write(file, "d", collect(d))
 end
 show()
