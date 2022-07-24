@@ -9,7 +9,7 @@
 #' This example is converted to a markdown file for the documentation.
 
 #' # Import JUDI, Linear algebra utilities and Plotting
-using JUDI, PyPlot, LinearAlgebra
+using JUDI, PyPlot, LinearAlgebra, HDF5
 
 #+ echo = false; results = "hidden"
 close("all")
@@ -24,7 +24,7 @@ close("all")
 
 #' ## Create discrete parameters
 # Set up model structure
-n = (120, 100)   # (x,y,z) or (x,z)
+n = (300, 200)   # (x,y,z) or (x,z)
 d = (10., 10.)
 o = (0., 0.)
 
@@ -34,13 +34,16 @@ v0 = ones(Float32,n) .+ 0.5f0
 v[:,Int(round(end/2)):end] .= 3.5f0
 rho = (v0 .+ .5f0) ./ 2
 
+imshow(v')
+show()
+
 # Slowness squared [s^2/km^2]
-m = (1f0 ./ v).^2
+m  = (1f0 ./ v).^2
 m0 = (1f0 ./ v0).^2
 dm = vec(m0 - m)
 
 # Setup model structure
-nsrc = 2	# number of sources
+nsrc = 10	# number of sources
 model = Model(n, d, o, m)
 model0 = Model(n, d, o, m0)
 
@@ -50,13 +53,13 @@ model0 = Model(n, d, o, m0)
 
 #' ## Create source and receivers positions at the surface
 # Set up receiver geometry
-nxrec = 120
+nxrec = 300
 xrec = range(0f0, stop=(n[1]-1)*d[1], length=nxrec)
 yrec = 0f0 # We have to set the y coordiante to zero (or any number) for 2D modeling
 zrec = range(d[1], stop=d[1], length=nxrec)
 
 # receiver sampling and recording time
-timeD = 1250f0   # receiver recording time [ms]
+timeD = 3000f0   # receiver recording time [ms]
 dtD = 2f0        # receiver sampling interval [ms]
 
 # Set up receiver structure
@@ -146,7 +149,7 @@ dot2 = dot(dobs, dobs)
 @show dot1, dot2, (dot2 - dot2)/(dot1 + dot2)
 
 #' # Inversion
-#' Our main goal is to provide an unversion framework for seismic inversion. To this end, as shown earlier,
+#' Our main goal is to provide an inversion framework for seismic inversion. To this end, as shown earlier,
 #' users can easily define the Jacobian operator and compute an RTM image (i.e FWI gradient) with a simple matrix-vector product.
 #' Once again, we provide both the Jacobian and its adjoint and we can compute Born linearized data.
 
@@ -166,92 +169,37 @@ display(fig)
 
 #' And the RTM image
 fig = figure()
-imshow(rtm', vmin=-1e2, vmax=1e2, cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
+imshow(rtm', cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
 xlabel("Lateral position(m)")
 ylabel("Depth (m)")
 title("RTM image")
 display(fig)
 
-#' ## Inversion utility functions
-#' We currently introduced the lineaar operators that allow to write seismic modeling and inversion in a high-level, linear algebra way. These linear operators allow the script to closely follow the mathematics and to be readable and understandable.
-#'
-#' However, these come with overhead. In particular, consider the following compuation on the FWI gradient:
-#'
-#' ```julia
-#' d_syn = F*q
-#' r = judiJacobian(F, q)' * (d_syn - d_obs)
-#' ```
-#'
-#' In this two lines, the forward modeling is performed twice: once to compute `d_syn` then once again to compute the Jacobian adjoint. In order to avoid this overhead for practical inversion, we provide utility function that directly comput the gradient and objective function (L2- misfit) of FWI, LSRTM and TWRI with minimum overhead.
 
-#' FWI misfit and gradient
-# evaluate FWI objective function
-f, g = fwi_objective(model0, q, dobs; options=opt)
+d_calc = J*rtm
 
-#' Plot gradient
+rtm_remig = adjoint(J)*d_calc
+
+#' We show the linearized data.
 fig = figure()
-imshow(g', vmin=-1e2, vmax=1e2, cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
-xlabel("Lateral position(m)")
-ylabel("Depth (m)")
-title("FWI gradient")
-display(fig)
-
-
-#' LSRTM misfit and gradient
-# evaluate LSRTM objective function
-fj, gj = lsrtm_objective(model0, q, dD, dm; options=opt)
-fjn, gjn = lsrtm_objective(model0, q, dobs, dm; nlind=true, options=opt)
-
-#' Plot gradients
-fig = figure()
-imshow(gj', vmin=-1, vmax=1, cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
-xlabel("Lateral position(m)")
-ylabel("Depth (m)")
-title("LSRTM gradient")
-display(fig)
-
-fig = figure()
-imshow(gjn', vmin=-1, vmax=1, cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
-xlabel("Lateral position(m)")
-ylabel("Depth (m)")
-title("LSRTM gradient with background data substracted")
-display(fig)
-
-#' By extension, lsrtm_objective is the same as fwi_objecive when `dm` is zero
-#' And with computing of the residual. Small noise can be seen in the difference
-#' due to floating point roundoff errors with openMP, but running with
-#' OMP_NUM_THREADS=1 (no parllelism) produces the exact (difference == 0) same result
-#' gjn2 == g
-fjn2, gjn2 = lsrtm_objective(model0, q, dobs, 0f0.*dm; nlind=true, options=opt)
-fig = figure()
-
-#' Plot gradient
-imshow(gjn2', vmin=-1e2, vmax=1e2, cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
-xlabel("Lateral position(m)")
-ylabel("Depth (m)")
-title("LSRTM gradient with zero perturbation")
-display(fig)
-
-
-#' # TWRI
-#' Finally, JUDI implements TWRI, an augmented method to tackle cycle skipping. Once again we provide a computationnally efficient wrapper function that returns the objective value and necessary gradients
-f, gm, gy = twri_objective(model0, q, dobs, nothing; options=opt, optionswri=TWRIOptions(params=:all))
-# With on-the-fly DFT, experimental
-f, gmf = twri_objective(model0, q, dobs, nothing; options=Options(frequencies=[[.009, .011], [.008, .012]]), optionswri=TWRIOptions(params=:m))
-
-#' Plot gradients
-fig = figure()
-imshow(gm', vmin=-1, vmax=1, cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
-xlabel("Lateral position(m)")
-ylabel("Depth (m)")
-title("TWRI gradient w.r.t m")
-display(fig)
-
-fig = figure()
-imshow(gy.data[1], vmin=-1e2, vmax=1e2, cmap="PuOr", extent=[xrec[1], xrec[end], timeD/1000, 0], aspect="auto")
+imshow(d_calc.data[1], vmin=-1, vmax=1, cmap="PuOr", extent=[xrec[1], xrec[end], timeD/1000, 0], aspect="auto")
 xlabel("Receiver position (m)")
 ylabel("Time (s)")
-title("TWRI gradient w.r.t y")
+title("Modeled data from the migrated image")
 display(fig)
 
+
+#' And the RTM image
+fig = figure()
+imshow(rtm_remig', cmap="Greys", extent=[0, (n[1]-1)*d[1], (n[2]-1)*d[2], 0 ], aspect="auto")
+xlabel("Lateral position(m)")
+ylabel("Depth (m)")
+title("RTM image")
+display(fig)
+
+
+# Save final velocity model, function value and history
+h5open("rtm.h5", "w") do file
+    write(file, "x", rtm)
+end
 show()
