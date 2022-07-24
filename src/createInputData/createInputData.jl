@@ -15,6 +15,7 @@ using JUDI, PyPlot, LinearAlgebra, HDF5
 close("all")
 
 dataFolder = "../../data/"
+mkpath(dataFolder)
 
 #' # Create a JUDI model structure
 #' In JUDI, a `Model` structure contains the grid information (origin, spacing, number of gridpoints)
