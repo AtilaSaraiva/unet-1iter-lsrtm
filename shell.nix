@@ -2,7 +2,7 @@
 with import sources.nixpkgs {
   config.allowUnfree = true;
   overlays = [
-    (import (builtins.fetchTarball https://github.com/AtilaSaraiva/myNixPythonPackages/archive/main.tar.gz))
+    (import sources.myNixPythonPackages)
   ];
 };
 
@@ -13,6 +13,9 @@ let
     curvelops
     pytorch
     pytorch-lightning
+    h5py
+    tiler
+    scikit-learn
     # other python packages you want
   ];
   python-with-my-packages = python3.withPackages my-python-packages;
