@@ -34,7 +34,7 @@ class Encoder(torch.nn.Module):
         ndim=1,
         in_channels=1,
         out_channels=1,
-        nconvs=2,
+        nconvs=3,
         kernel_size=3,
         activation=None,
         norm=False,
@@ -49,10 +49,10 @@ class Encoder(torch.nn.Module):
                 _in_channels = in_channels
             else:
                 _in_channels = out_channels
-            
+
             if norm:
                 self.norms.append(norm_for_dim[ndim](_in_channels))
-            
+
             self.convs.append(conv_for_dim[ndim](
                 _in_channels,
                 out_channels,
@@ -60,21 +60,21 @@ class Encoder(torch.nn.Module):
                 stride=1,
                 padding='same',
             ))
-            
+
         if activation:
             self.activation = activation()
         else:
             self.activation = lambda x: x
-        
+
     def forward(self, x, norm=None):
         norm = norm or True
-        
+
         for step in range(len(self.convs)):
             if self.norms and norm:
                 x = self.norms[step](x)
             x = self.convs[step](x)
             x = self.activation(x)
-        
+
         return x
 
 class Decoder(torch.nn.Module):
@@ -99,10 +99,10 @@ class Decoder(torch.nn.Module):
                 _in_channels = in_channels + out_channels
             else:
                 _in_channels = out_channels
-            
+
             if norm:
                 self.norms.append(norm_for_dim[ndim](_in_channels))
-            
+
             self.convs.append(conv_for_dim[ndim](
                 _in_channels,
                 out_channels,
@@ -110,24 +110,24 @@ class Decoder(torch.nn.Module):
                 stride=1,
                 padding='same',
             ))
-            
+
         if activation:
             self.activation = activation()
         else:
             self.activation = lambda x: x
-        
+
     def forward(self, x, x_old, norm=None):
         norm = norm or True
-        
+
         x = torch.nn.functional.interpolate(x, x_old.shape[2:], mode="nearest-exact")
         x = torch.concat([x_old, x], dim=1)
-        
+
         for step in range(len(self.convs)):
             if self.norms and norm:
                 x = self.norms[step](x)
             x = self.convs[step](x)
             x = self.activation(x)
-        
+
         return x
 
 
@@ -145,11 +145,11 @@ class MultiScaleEncoder(torch.nn.Module):
         dropout=False,
     ):
         super().__init__()
-        
+
         self._nscales = nscales
-        
+
         self.encoders = torch.nn.ModuleList()
-        
+
         _in_channels = in_channels
         for scale in range(self._nscales):
             _out_channels = in_channels * 2 ** (scale)
@@ -162,38 +162,38 @@ class MultiScaleEncoder(torch.nn.Module):
                 activation=activation,
                 norm=norm)
             self.encoders.append(encoder)
-            
+
             _in_channels = _out_channels
 
-        
+
         self.pool = pool_for_dim[ndim](kernel_size=3, stride=2, padding=1)
-        
+
         if dropout:
             self.dropout = drop_for_dim[ndim](dropout)
         else:
             self.dropout = lambda x: x
-    
+
     def forward(self, x, get_scale=None, train=False, return_old=False):
         old = []
-        
+
         for scale in range(self._nscales):
             x = self.encoders[scale](x)
-            
+
             if scale == get_scale:
                 return x
-            
+
             if scale < self._nscales-1:
                 old.append(x)
                 x = self.pool(x)
-            
+
         if train:
             x = self.dropout(x)
-        
+
         if return_old:
             return x, old
         else:
             return x
-        
+
 
 class MultiScaleDecoder(torch.nn.Module):
 
@@ -208,9 +208,9 @@ class MultiScaleDecoder(torch.nn.Module):
         norm=False,
     ):
         super().__init__()
-        
+
         self._nscales = nscales
-        
+
         self.decoders = torch.nn.ModuleList()
 
         _in_channels = in_channels
@@ -225,11 +225,11 @@ class MultiScaleDecoder(torch.nn.Module):
                 activation=activation,
                 norm=norm)
             self.decoders.append(decoder)
-    
+
             _in_channels = _out_channels
         self.decoders = self.decoders[::-1]
-    
-    def forward(self, x, old):        
+
+    def forward(self, x, old):
         for scale in range(self._nscales-2, -1 ,-1):
             x_old = old.pop()
             x = self.decoders[scale](x, x_old)  # CONCAT!!!, in_channels
@@ -259,7 +259,7 @@ class UNet(torch.nn.Module):
         verbose=False,
     ):
         super().__init__()
-        
+
         last_activation = last_activation or activation
         first_activation = first_activation or activation
 
@@ -267,10 +267,10 @@ class UNet(torch.nn.Module):
             self.first_activation = first_activation()
         else:
             self.first_activation = lambda x: x
-        
+
         if norm_at_start:
             input_norm = norm_for_dim[ndim](in_channels)
-        
+
         self.to_base_channels = conv_for_dim[ndim](
                 in_channels,
                 base_channels,
@@ -278,7 +278,7 @@ class UNet(torch.nn.Module):
                 stride=1,
                 padding='same',
         )
-        
+
         self.global_encoder = MultiScaleEncoder(
             ndim=ndim,
             in_channels=base_channels,
@@ -289,9 +289,9 @@ class UNet(torch.nn.Module):
             norm=norm,
             dropout=dropout,
         )
-        
+
         deep_channels = base_channels * 2 ** (nscales-1)
-        
+
         self.global_decoder = MultiScaleDecoder(
             ndim=ndim,
             in_channels=deep_channels,
@@ -301,7 +301,7 @@ class UNet(torch.nn.Module):
             activation=activation,
             norm=norm,
         )
-        
+
         self.to_out_channels = conv_for_dim[ndim](
             base_channels,
             out_channels,
@@ -309,7 +309,7 @@ class UNet(torch.nn.Module):
             stride=1,
             padding='same',
         )
-        
+
         if last_activation:
             self.last_activation = last_activation()
         else:
