@@ -1,7 +1,33 @@
+import numpy as np
+from dataclasses import dataclass
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
 from unet import UNet
+from curvelops import FDCT2D
+from curvelet_filter import CurveletFilter
+import pylops
+import json
+# import m8r
+from sklearn.preprocessing import StandardScaler, RobustScaler, MaxAbsScaler
+
+
+def scaleThat(main_input):
+    scales = []
+    for i in range(len(main_input)):
+        scales.append(RobustScaler())
+        main_input[i] = scales[i].fit_transform(main_input[i].reshape(-1,main_input[i].shape[-1])).reshape(main_input[i].shape)
+    return scales
+
+
+def unscaleThat(main_input,scales):
+    for i in range(len(main_input)):
+        main_input[i] = scales[i].inverse_transform(main_input[i].reshape(-1,main_input[i].shape[-1])).reshape(main_input[i].shape)
+
+
+def threshold(arr,thresh):
+    arr[arr < thresh] = 0
+    return 
 
 
 class TrainSetup(pl.LightningModule):
@@ -61,8 +87,7 @@ class RandomDataset(torch.utils.data.Dataset):
         y = self.distribution.sample(self.output_shape)
         return x, y
 
-
-if __name__ == "__main__":
+def example_training():
     train_dataset = RandomDataset((2, 16, 16), (2, 16, 16), 1000)
     test_dataset = RandomDataset((2, 16, 16), (2, 16, 16), 100)
 
@@ -80,3 +105,74 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer(max_epochs=2000, limit_train_batches=100)
     trainer.fit(train_setup)
+
+
+if __name__ == "__main__":
+    nbscales = 7
+    nbangles_coarse = 4
+
+    patch_num = 1000
+    patch_size = 50
+    stride_z = 20
+    stride_x = 20
+    val_split = 0.2
+    lr = 0.01
+
+
+    X = torch.empty((200, 200))
+    Y = torch.empty((200, 200))
+    shape = X.shape
+
+    DCT = FDCT2D(shape, nbscales=nbscales, nbangles_coarse=nbangles_coarse)
+
+    c_X = DCT * X.ravel()
+    cr_X = DCT.struct(c_X)
+
+    # unsqueeze to 4D
+    X = X[None, None, :, :]
+    Y = X[None, None, :, :]
+
+    contador = 0
+    shapes = []
+    for s in range(len(cr_X)):
+        for w in range(len(cr_X[s])):
+            shapes.append((1, *cr_X[s][w].shape))
+
+    main_input = [torch.empty((1, *shape), dtype=torch.float32) for shape in shapes]
+    main_output = [torch.empty((1, *shape), dtype=torch.float32) for shape in shapes]
+
+    contador = 0
+    curvAux = DCT * X[0,0].ravel()
+    exit()
+    curvAux = DCT.struct(curvAux)
+    for s in range(len(curvAux)):
+        for w in range(len(curvAux[s])):
+            t = threshold(np.abs(curvAux[s][w]), 1e-6)
+            print(t)
+            #main_input[contador][0,:,:] = threshold(np.abs(curvAux[s][w]), 1e-6)
+            #contador += 1
+
+    exit()
+    contador = 0
+    curvAux = DCT * Y.ravel()
+    curvAux = DCT.struct(curvAux)
+    for s in range(len(curvAux)):
+        for w in range(len(curvAux[s])):
+            print(main_output[contador])
+            # main_output[contador][0,:,:] = threshold(np.abs(curvAux[s][w]),1e-6)
+            # contador += 1
+
+
+    scaleThat(main_input)
+    scaleThat(main_output)
+
+    model =  CurveletFilter(shapes)
+    print(model(main_input))
+    exit()
+    #history = model.fit(main_input, main_output,
+    #                    epochs=10,
+    #                    callbacks=ClearMemory(),
+    #                    batch_size=1)
+    #                    # validation_split=0.2)
+
+
