@@ -27,7 +27,7 @@ def unscaleThat(main_input,scales):
 
 def threshold(arr,thresh):
     arr[arr < thresh] = 0
-    return 
+    return arr
 
 
 class TrainSetup(pl.LightningModule):
@@ -119,18 +119,19 @@ if __name__ == "__main__":
     lr = 0.01
 
 
-    X = torch.empty((200, 200))
-    Y = torch.empty((200, 200))
+    X = np.ones((200, 200))
+    Y = np.ones((200, 200))
     shape = X.shape
 
+    # defining transform
     DCT = FDCT2D(shape, nbscales=nbscales, nbangles_coarse=nbangles_coarse)
 
     c_X = DCT * X.ravel()
     cr_X = DCT.struct(c_X)
 
-    # unsqueeze to 4D
-    X = X[None, None, :, :]
-    Y = X[None, None, :, :]
+    ## unsqueeze to 4D
+    #X = X[None, None, :, :]
+    #Y = X[None, None, :, :]
 
     contador = 0
     shapes = []
@@ -138,41 +139,31 @@ if __name__ == "__main__":
         for w in range(len(cr_X[s])):
             shapes.append((1, *cr_X[s][w].shape))
 
-    main_input = [torch.empty((1, *shape), dtype=torch.float32) for shape in shapes]
-    main_output = [torch.empty((1, *shape), dtype=torch.float32) for shape in shapes]
+    main_input = [np.empty((1, *shape), dtype=np.float32) for shape in shapes]
+    main_output = [np.empty((1, *shape), dtype=np.float32) for shape in shapes]
 
     contador = 0
-    curvAux = DCT * X[0,0].ravel()
-    exit()
+    curvAux = DCT * X.ravel()
     curvAux = DCT.struct(curvAux)
     for s in range(len(curvAux)):
         for w in range(len(curvAux[s])):
-            t = threshold(np.abs(curvAux[s][w]), 1e-6)
-            print(t)
-            #main_input[contador][0,:,:] = threshold(np.abs(curvAux[s][w]), 1e-6)
-            #contador += 1
+            main_input[contador][0,:,:] = threshold(np.abs(curvAux[s][w]), 1e-6)
+            contador += 1
 
-    exit()
     contador = 0
     curvAux = DCT * Y.ravel()
     curvAux = DCT.struct(curvAux)
     for s in range(len(curvAux)):
         for w in range(len(curvAux[s])):
-            print(main_output[contador])
-            # main_output[contador][0,:,:] = threshold(np.abs(curvAux[s][w]),1e-6)
-            # contador += 1
-
+            main_output[contador][0,:,:] = threshold(np.abs(curvAux[s][w]),1e-6)
+            contador += 1
 
     scaleThat(main_input)
     scaleThat(main_output)
 
     model =  CurveletFilter(shapes)
+
+    main_input = [torch.from_numpy(inp) for inp in main_input]
+    main_output = [torch.from_numpy(out) for out in main_output]
+
     print(model(main_input))
-    exit()
-    #history = model.fit(main_input, main_output,
-    #                    epochs=10,
-    #                    callbacks=ClearMemory(),
-    #                    batch_size=1)
-    #                    # validation_split=0.2)
-
-
