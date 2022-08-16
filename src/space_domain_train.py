@@ -2,7 +2,7 @@ import numpy as np
 from tile_dataset import *
 import h5py
 from matplotlib import pyplot as plt
-from train_unet import TrainSetup
+from trainUnetClass import TrainSetup
 from unet import UNet
 import torch
 import torch.nn.functional as F
