@@ -8,8 +8,9 @@ import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
 from sklearn.preprocessing import RobustScaler, MaxAbsScaler
+import os
 
-dataFolder = "../data/"
+dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
 scaler_mig = MaxAbsScaler().fit(rtm_dset)
@@ -40,5 +41,8 @@ train_setup = TrainSetup(
     learning_rate=0.005,
 )
 
-trainer = pl.Trainer(max_epochs=100, limit_train_batches=50)
+trainer = pl.Trainer(max_epochs=10, limit_train_batches=50)
 trainer.fit(train_setup)
+
+modeldir = os.environ['MODELDIR']
+torch.save(model.state_dict(), modeldir + "spaceUnet.pt")
