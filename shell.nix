@@ -30,5 +30,7 @@ mkShell {
     export DEVITO_LOGGING=DEBUG
     export DEVITO_ARCH="gcc"
     export DEVITO_LANGUAGE="openmp"
+    export MODELDIR=$PWD/models/
+    export DATADIR=$PWD/data/
   '';
 }
