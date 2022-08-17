@@ -34,3 +34,6 @@ with torch.no_grad():
     normalized_filtered_image = merger.merge(unpad=True).reshape(original_shape)
 
 filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
+
+with h5py.File(dataFolder + "filtered_space_domain_image.h5", "w") as f:
+    f.create_dataset('m', data=filtered_image)
