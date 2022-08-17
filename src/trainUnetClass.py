@@ -107,6 +107,43 @@ def example_training():
     trainer.fit(train_setup)
 
 
+def make_curv_transform(x, nbscales=7, nbangles=4):
+    shape = x.shape
+
+    dct = FDCT2D(shape, nbscales=nbscales, nbangles_coarse=nbangles)
+
+    xc = dct.struct(dct * x.ravel())
+
+    curv_shapes = [(1, *xc[s][w].shape)
+                    for s, _ in enumerate(xc)
+                    for w, _ in enumerate(xc[s])]
+
+    def curv_fwd(x):
+        out_data = [np.empty((1, *shape), dtype=np.float32)
+                    for shape in curv_shapes]
+
+        xc = dct.struct(dct * x.ravel())
+
+        i = 0
+        for s, _ in enumerate(xc):
+            for w, _ in enumerate(xc[s]):
+                out_data[i][0,:,:] = threshold(np.abs(xc[s][w]), 1e-6)
+                i += 1
+        return out_data
+
+    def curv_inv(x):
+        # TODO make it work
+        pass
+
+    # TODO remove if not useful
+    #curv_shape_by_feature = {
+    #    s: {w: xc_sw.shape for w, xc_sw in enumerate(xc_s)}
+    #    for s, xc_s in enumerate(xc)
+    #}
+
+    return curv_fwd, curv_inv, curv_shapes
+
+
 if __name__ == "__main__":
     nbscales = 7
     nbangles_coarse = 4
@@ -118,52 +155,28 @@ if __name__ == "__main__":
     val_split = 0.2
     lr = 0.01
 
+    x = np.random.rand(5, 5)
+    y = np.random.rand(5, 5)
+    # x = np.ones((5, 5))
+    # y = np.ones((5, 5))
 
-    X = np.ones((200, 200))
-    Y = np.ones((200, 200))
-    shape = X.shape
+    curv_fwd, curv_inv, curv_shapes = make_curv_transform(x)
 
-    # defining transform
-    DCT = FDCT2D(shape, nbscales=nbscales, nbangles_coarse=nbangles_coarse)
+    xc = curv_fwd(x)
+    yc = curv_fwd(y)
 
-    c_X = DCT * X.ravel()
-    cr_X = DCT.struct(c_X)
+    scaleThat(xc)
+    scaleThat(yc)
 
-    ## unsqueeze to 4D
-    #X = X[None, None, :, :]
-    #Y = X[None, None, :, :]
+    model =  CurveletFilter(curv_shapes)
 
-    contador = 0
-    shapes = []
-    for s in range(len(cr_X)):
-        for w in range(len(cr_X[s])):
-            shapes.append((1, *cr_X[s][w].shape))
+    main_input = [torch.from_numpy(i) for i in xc]
+    main_output = [torch.from_numpy(i) for i in yc]
 
-    main_input = [np.empty((1, *shape), dtype=np.float32) for shape in shapes]
-    main_output = [np.empty((1, *shape), dtype=np.float32) for shape in shapes]
+    for i in main_input:
+        # i.requires_grad_ = True
+        # i.require_grad_ = True
+        i.requires_grad_(True)
 
-    contador = 0
-    curvAux = DCT * X.ravel()
-    curvAux = DCT.struct(curvAux)
-    for s in range(len(curvAux)):
-        for w in range(len(curvAux[s])):
-            main_input[contador][0,:,:] = threshold(np.abs(curvAux[s][w]), 1e-6)
-            contador += 1
-
-    contador = 0
-    curvAux = DCT * Y.ravel()
-    curvAux = DCT.struct(curvAux)
-    for s in range(len(curvAux)):
-        for w in range(len(curvAux[s])):
-            main_output[contador][0,:,:] = threshold(np.abs(curvAux[s][w]),1e-6)
-            contador += 1
-
-    scaleThat(main_input)
-    scaleThat(main_output)
-
-    model =  CurveletFilter(shapes)
-
-    main_input = [torch.from_numpy(inp) for inp in main_input]
-    main_output = [torch.from_numpy(out) for out in main_output]
-
-    print(model(main_input))
+    yc_pred = model(main_input)
+    print(yc_pred)
