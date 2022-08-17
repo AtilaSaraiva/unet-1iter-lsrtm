@@ -30,47 +30,6 @@ def threshold(arr,thresh):
     return arr
 
 
-class TrainSetup(pl.LightningModule):
-
-    def __init__(self,
-                 model: torch.nn.Module,
-                 train_loader: torch.utils.data.DataLoader,
-                 test_loader: torch.utils.data.DataLoader = None,
-                 val_loader: torch.utils.data.DataLoader = None,
-                 learning_rate: float = 0.005):
-        super().__init__()
-        self.model = model
-        self.train_loader = train_loader
-        self.test_loader = test_loader or self.train_loader
-        self.val_loader = val_loader or self.test_loader
-        self.learning_rate = learning_rate
- 
-    def train_dataloader(self):
-        return self.train_loader
-
-    def val_dataloader(self):
-        return self.val_loader
- 
-    def test_dataloader(self):
-        return self.test_loader
- 
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        return optimizer
- 
-    def training_step(self, batch, batch_idx):
-        X, Y = batch
-        Y_pred = self.model(X)
-        loss =  F.mse_loss(Y, Y_pred)
-        return loss
- 
-    def validation_step(self, batch, batch_idx):
-        loss = self.training_step(batch, batch_idx)
-        metrics = {"loss": loss}
-        metrics = {f"val_{k}": v for k, v in metrics.items()}
-        self.log_dict(metrics)  #, sync_dist=True))
-
-
 class RandomDataset(torch.utils.data.Dataset):
 
     def __init__(self, input_shape=(), output_shape=(), size=1):

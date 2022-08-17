@@ -5,12 +5,11 @@ from unet import UNet
 import numpy as np
 
 
-@dataclass
 class CurveletFilter(torch.nn.Module):
-    shapes: Sequence[int]
 
-    def __post_init__(self, base_channels=16):
+    def __init__(self, shapes, base_channels=16):
         super().__init__()
+        self.shapes = shapes
 
         self.models = torch.nn.ModuleList()
         self._models = []
