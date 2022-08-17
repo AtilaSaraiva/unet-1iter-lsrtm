@@ -6,10 +6,12 @@ from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 from unet import UNet
 from matplotlib import pyplot as plt
 
+scaler = RobustScaler()
+
 dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
-scaler_mig = MaxAbsScaler().fit(rtm_dset)
+scaler_mig = scaler.fit(rtm_dset)
 rtm_norm = scaler_mig.transform(rtm_dset)
 original_shape = rtm_norm.shape
 rtm_norm = rtm_norm.reshape((1,*original_shape))
@@ -34,6 +36,9 @@ with torch.no_grad():
     normalized_filtered_image = merger.merge(unpad=True).reshape(original_shape)
 
 filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
+
+plt.imshow(normalized_filtered_image, cmap="seismic")
+plt.show()
 
 with h5py.File(dataFolder + "filtered_space_domain_image.h5", "w") as f:
     f.create_dataset('m', data=filtered_image)

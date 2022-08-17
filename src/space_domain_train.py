@@ -10,23 +10,31 @@ import pytorch_lightning as pl
 from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 import os
 
-epochs = 2000
+epochs = 30
+scaler = RobustScaler()
 
 dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
-scaler_mig = MaxAbsScaler().fit(rtm_dset)
-rtm_norm = scaler_mig.transform(rtm_dset)
+scaler_mig = scaler.fit(rtm_dset)
+rtm_norm = scaler_mig.transform(rtm_dset)[20:,:]
 
 rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
 rtmRemig_dset = rtmRemig_file["m"]
-scaler_remig = MaxAbsScaler().fit(rtmRemig_dset)
-rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
+scaler_remig = scaler.fit(rtmRemig_dset)
+rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)[20:,:]
 
-X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=600, patch_size=32)
+# plt.imshow(rtmRemig_norm)
+# plt.savefig("rtmremig.pdf")
+# plt.show()
+# plt.imshow(rtm_norm)
+# plt.savefig("rtm.pdf")
+# plt.show()
 
-X_train, X_test = X[:500,:,:,:], X[500:,:,:,:]
-Y_train, Y_test = Y[:500,:,:,:], Y[500:,:,:,:]
+X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=150, patch_size=32)
+
+X_train, X_test = X[:130,:,:,:], X[130:,:,:,:]
+Y_train, Y_test = Y[:130,:,:,:], Y[130:,:,:,:]
 
 train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
 test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
@@ -43,7 +51,7 @@ train_setup = TrainSetup(
     learning_rate=0.005,
 )
 
-trainer = pl.Trainer(max_epochs=2000, limit_train_batches=50)
+trainer = pl.Trainer(max_epochs=epochs, limit_train_batches=50)
 trainer.fit(train_setup)
 
 modeldir = os.environ['MODELDIR']
