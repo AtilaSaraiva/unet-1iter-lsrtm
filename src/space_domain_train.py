@@ -10,6 +10,8 @@ import pytorch_lightning as pl
 from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 import os
 
+epochs = 2000
+
 dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
@@ -41,7 +43,7 @@ train_setup = TrainSetup(
     learning_rate=0.005,
 )
 
-trainer = pl.Trainer(max_epochs=10, limit_train_batches=50)
+trainer = pl.Trainer(max_epochs=2000, limit_train_batches=50)
 trainer.fit(train_setup)
 
 modeldir = os.environ['MODELDIR']
