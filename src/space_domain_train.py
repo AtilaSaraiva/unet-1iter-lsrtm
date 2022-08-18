@@ -66,13 +66,6 @@ rtmRemig_dset = rtmRemig_file["m"]
 scaler_remig = scaler.fit(rtmRemig_dset)
 rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
-# plt.imshow(rtmRemig_norm)
-# plt.savefig("rtmremig.pdf")
-# plt.show()
-# plt.imshow(rtm_norm)
-# plt.savefig("rtm.pdf")
-# plt.show()
-
 X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=250, patch_size=32)
 
 X_train, X_test = X[:200,:,:,:], X[200:,:,:,:]
