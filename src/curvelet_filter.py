@@ -27,7 +27,8 @@ class CurveletFilter(torch.nn.Module):
                     base_channels=base_channels,
                     activation=torch.nn.Tanh,
                     first_activation=torch.nn.Tanh,
-                    last_activation=torch.nn.Tanh,
+                    last_activation=torch.nn.LazyLinear,
+                    weight_decay = 0.01
                 )
                 self.models.append(unet)
                 self._models.append(unet)

@@ -69,22 +69,24 @@ class TrainSetup(pl.LightningModule):
         metrics = {f"val_{k}": v for k, v in metrics.items()}
         self.log_dict(metrics)  #, sync_dist=True))
 
-
+scaler = MaxAbsScaler()
 dataFolder = os.environ["DATADIR"]
+epochs = 30
+
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
-scaler_mig = MaxAbsScaler().fit(rtm_dset)
+scaler_mig = scaler.fit(rtm_dset)
 rtm_norm = scaler_mig.transform(rtm_dset)
 
 rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
 rtmRemig_dset = rtmRemig_file["m"]
-scaler_remig = MaxAbsScaler().fit(rtmRemig_dset)
+scaler_remig = scaler.fit(rtmRemig_dset)
 rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
-X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=600, patch_size=32)
+X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=100, patch_size=64)
 
-X_train, X_test = X[:500,:,:,:], X[500:,:,:,:]
-Y_train, Y_test = Y[:500,:,:,:], Y[500:,:,:,:]
+X_train, X_test = X[:80,:,:,:], X[80:,:,:,:]
+Y_train, Y_test = Y[:80,:,:,:], Y[80:,:,:,:]
 
 curv_fwd, curv_inv, curv_shapes = make_curv_transform(X[0,0])
 
@@ -94,7 +96,6 @@ test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
-#model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
 model =  CurveletFilter(curv_shapes)
 
 train_setup = TrainSetup(
@@ -105,8 +106,8 @@ train_setup = TrainSetup(
     learning_rate=0.005,
 )
 
-trainer = pl.Trainer(max_epochs=10, limit_train_batches=50)
+trainer = pl.Trainer(max_epochs=epochs, limit_train_batches=50)
 trainer.fit(train_setup)
 
 modeldir = os.environ['MODELDIR']
-torch.save(model.state_dict(), modeldir + "spaceUnet.pt")
+torch.save(model.state_dict(), modeldir + "curveletUnet.pt")
