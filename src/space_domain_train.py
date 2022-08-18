@@ -19,13 +19,15 @@ class TrainSetup(pl.LightningModule):
                  train_loader: torch.utils.data.DataLoader,
                  test_loader: torch.utils.data.DataLoader = None,
                  val_loader: torch.utils.data.DataLoader = None,
-                 learning_rate: float = 0.005):
+                 learning_rate: float = 0.005,
+                 weight_decay: float = 0.5):
         super().__init__()
         self.model = model
         self.train_loader = train_loader
         self.test_loader = test_loader or self.train_loader
         self.val_loader = val_loader or self.test_loader
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
 
     def train_dataloader(self):
         return self.train_loader
@@ -37,7 +39,7 @@ class TrainSetup(pl.LightningModule):
         return self.test_loader
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         return optimizer
 
     def training_step(self, batch, batch_idx):
@@ -57,12 +59,12 @@ dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
 scaler_mig = scaler.fit(rtm_dset)
-rtm_norm = scaler_mig.transform(rtm_dset)[20:,:]
+rtm_norm = scaler_mig.transform(rtm_dset)
 
 rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
 rtmRemig_dset = rtmRemig_file["m"]
 scaler_remig = scaler.fit(rtmRemig_dset)
-rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)[20:,:]
+rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
 # plt.imshow(rtmRemig_norm)
 # plt.savefig("rtmremig.pdf")
@@ -71,10 +73,10 @@ rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)[20:,:]
 # plt.savefig("rtm.pdf")
 # plt.show()
 
-X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=150, patch_size=32)
+X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=250, patch_size=32)
 
-X_train, X_test = X[:130,:,:,:], X[130:,:,:,:]
-Y_train, Y_test = Y[:130,:,:,:], Y[130:,:,:,:]
+X_train, X_test = X[:200,:,:,:], X[200:,:,:,:]
+Y_train, Y_test = Y[:200,:,:,:], Y[200:,:,:,:]
 
 train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
 test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
@@ -89,6 +91,7 @@ train_setup = TrainSetup(
     train_loader=train_loader,
     test_loader=test_loader,
     learning_rate=0.005,
+    weight_decay=0.01
 )
 
 trainer = pl.Trainer(max_epochs=epochs, limit_train_batches=50)
