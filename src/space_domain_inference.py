@@ -18,6 +18,7 @@ rtm_norm = rtm_norm.reshape((1,*original_shape))
 
 tiler = Tiler(data_shape=rtm_norm.shape,
       tile_shape=(1, 32, 32),
+      overlap=(0,20,20),
       channel_dimension=0)
 
 tiles = tiler.get_all_tiles(rtm_norm)
@@ -37,7 +38,7 @@ with torch.no_grad():
 
 filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
 
-plt.imshow(normalized_filtered_image, cmap="seismic")
+plt.imshow(filtered_image, cmap="seismic")
 plt.show()
 
 with h5py.File(dataFolder + "filtered_space_domain_image.h5", "w") as f:
