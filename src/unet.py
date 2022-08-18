@@ -247,10 +247,10 @@ class UNet(torch.nn.Module):
         nconvs_by_scale=2,
         base_channels=8,
         kernel_size=3,
-        activation=torch.nn.ReLU,
+        activation=torch.nn.Tanh,
         first_activation=None,
-        last_activation=None,
-        norm=False,
+        last_activation=torch.nn.LazyLinear,
+        norm=True,
         dropout=False,
         norm_at_start=False,
         nconvs_bottom=None,
@@ -311,7 +311,10 @@ class UNet(torch.nn.Module):
         )
 
         if last_activation:
-            self.last_activation = last_activation()
+            if last_activation == torch.nn.LazyLinear:
+                self.last_activation = last_activation(32)
+            else:
+                self.last_activation = last_activation()
         else:
             self.last_activation = lambda x: x
 
