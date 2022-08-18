@@ -28,21 +28,21 @@ class TrainSetup(pl.LightningModule):
         self.val_loader = val_loader or self.test_loader
         self.learning_rate = learning_rate
         self.transform = transform
-        
- 
+
+
     def train_dataloader(self):
         return self.train_loader
 
     def val_dataloader(self):
         return self.val_loader
- 
+
     def test_dataloader(self):
         return self.test_loader
- 
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
- 
+
     def training_step(self, batch, batch_idx):
         X, Y = batch
         residue = torch.tensor(0, dtype=torch.float32)
@@ -54,7 +54,7 @@ class TrainSetup(pl.LightningModule):
                 residue += F.mse_loss(yc[i], yc_pred[i])
         loss = residue / len(X)
         return loss
- 
+
     def validation_step(self, batch, batch_idx):
         X, Y = batch
         residue = torch.tensor(0, dtype=torch.float32)
