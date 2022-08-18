@@ -50,7 +50,7 @@ m0 = (1f0 ./ v0).^2
 dm = vec(m0 - m)
 
 # Setup model structure
-nsrc = 10	# number of sources
+nsrc = 50	# number of sources
 model = Model(n, d, o, m)
 model0 = Model(n, d, o, m0)
 
@@ -164,10 +164,11 @@ dot2 = dot(dobs, dobs)
 dD = J*dm
 # Adjoint jacobian, RTM image
 rtm = adjoint(J)*dD
+rtm[:, 1:30] .= 0.0
 
 #' We show the linearized data.
 fig = figure()
-imshow(dD.data[1], vmin=-1, vmax=1, cmap="PuOr", extent=[xrec[1], xrec[end], timeD/1000, 0], aspect="auto")
+imshow(dD.data[1], cmap="PuOr", extent=[xrec[1], xrec[end], timeD/1000, 0], aspect="auto")
 xlabel("Receiver position (m)")
 ylabel("Time (s)")
 title("Linearized data")
@@ -182,14 +183,13 @@ ylabel("Depth (m)")
 title("RTM image")
 display(fig)
 
-
 d_calc = J*rtm
 
 rtm_remig = adjoint(J)*d_calc
 
 #' We show the linearized data.
 fig = figure()
-imshow(d_calc.data[1], vmin=-1, vmax=1, cmap="PuOr", extent=[xrec[1], xrec[end], timeD/1000, 0], aspect="auto")
+imshow(d_calc.data[1], cmap="PuOr", extent=[xrec[1], xrec[end], timeD/1000, 0], aspect="auto")
 xlabel("Receiver position (m)")
 ylabel("Time (s)")
 title("Modeled data from the migrated image")
