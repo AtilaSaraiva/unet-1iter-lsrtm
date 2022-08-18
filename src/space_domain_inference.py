@@ -38,7 +38,9 @@ with torch.no_grad():
 
 filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
 
-plt.imshow(filtered_image, cmap="seismic")
+fig, ax = plt.subplots(2)
+ax[0].imshow(rtm_dset, cmap="seismic")
+ax[1].imshow(filtered_image, cmap="seismic")
 plt.show()
 
 with h5py.File(dataFolder + "filtered_space_domain_image.h5", "w") as f:
