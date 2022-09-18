@@ -133,3 +133,6 @@ lightning_logs
 
 # Data folder
 data/*
+
+# Model folder
+models/*
