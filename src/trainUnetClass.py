@@ -11,18 +11,22 @@ import json
 # import m8r
 from sklearn.preprocessing import StandardScaler, RobustScaler, MaxAbsScaler
 
+scaler = RobustScaler
 
 def scaleThat(main_input):
     scales = []
     for i in range(len(main_input)):
         scales.append(RobustScaler())
         main_input[i] = scales[i].fit_transform(main_input[i].reshape(-1,main_input[i].shape[-1])).reshape(main_input[i].shape)
+
     return scales
 
 
 def unscaleThat(main_input,scales):
     for i in range(len(main_input)):
-        main_input[i] = scales[i].inverse_transform(main_input[i].reshape(-1,main_input[i].shape[-1])).reshape(main_input[i].shape)
+        aux = main_input[i].numpy()
+
+        main_input[i] = scales[i].inverse_transform(aux.reshape(-1,aux.shape[-1])).reshape(aux.shape)
 
 
 def threshold(arr,thresh):
@@ -88,6 +92,8 @@ def make_curv_transform(x, nbscales=2, nbangles=8, with_phase=False):
             for w, _ in enumerate(xc[s]):
                 out_data[i][0,:,:] = threshold(np.abs(xc[s][w]), 1e-6)
                 i += 1
+
+        scaleThat(out_data)
         return out_data
 
     def curv_fwd_with_phase(x):
@@ -106,18 +112,15 @@ def make_curv_transform(x, nbscales=2, nbangles=8, with_phase=False):
                 phase_data[i][0,:,:] = np.angle(xc[s][w])
                 i += 1
 
-        out_data = tuple([torch.from_numpy(i) for i in out_data])
         return out_data, phase_data
 
     def curv_inv(tile_amplitude, tile_phase):
-        # TODO make it work
-
         curvArray = []
         contador = 0
         for s, _ in enumerate(xc):
             wedges = []
             for w, _ in enumerate(xc[s]):
-                wedges.append(tile_amplitude[contador][0,0,:,:].numpy() * np.exp(np.cfloat(1j) * tile_phase[contador][0,0,:,:]))
+                wedges.append(tile_amplitude[contador][0,0,:,:] * np.exp(np.cfloat(1j) * tile_phase[contador][0,0,:,:]))
                 contador+=1
 
             curvArray.append(wedges)
