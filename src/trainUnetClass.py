@@ -66,7 +66,7 @@ def example_training():
     trainer.fit(train_setup)
 
 
-def make_curv_transform(x, nbscales=7, nbangles=4):
+def make_curv_transform(x, nbscales=2, nbangles=8, with_phase=False):
     shape = x.shape
 
     dct = FDCT2D(shape, nbscales=nbscales, nbangles_coarse=nbangles)
@@ -90,9 +90,44 @@ def make_curv_transform(x, nbscales=7, nbangles=4):
                 i += 1
         return out_data
 
-    def curv_inv(x):
+    def curv_fwd_with_phase(x):
+        out_data = [np.empty((1, *shape), dtype=np.float32)
+                    for shape in curv_shapes]
+
+        phase_data = [np.empty((1, *shape), dtype=np.float32)
+                    for shape in curv_shapes]
+
+        xc = dct.struct(dct * x.ravel())
+
+        i = 0
+        for s, _ in enumerate(xc):
+            for w, _ in enumerate(xc[s]):
+                out_data[i][0,:,:] = threshold(np.abs(xc[s][w]), 1e-6)
+                phase_data[i][0,:,:] = np.angle(xc[s][w])
+                i += 1
+
+        out_data = tuple([torch.from_numpy(i) for i in out_data])
+        return out_data, phase_data
+
+    def curv_inv(tile_amplitude, tile_phase):
         # TODO make it work
-        pass
+
+        curvArray = []
+        contador = 0
+        for s, _ in enumerate(xc):
+            wedges = []
+            for w, _ in enumerate(xc[s]):
+                wedges.append(tile_amplitude[contador][0,0,:,:].numpy() * np.exp(np.cfloat(1j) * tile_phase[contador][0,0,:,:]))
+                contador+=1
+
+            curvArray.append(wedges)
+
+        curvArray = dct.vect(curvArray)
+        spaceDomainArray = dct.H * curvArray
+        spaceDomainArray = spaceDomainArray.reshape(*shape)
+        spaceDomainArray = np.real(spaceDomainArray)
+
+        return spaceDomainArray
 
     # TODO remove if not useful
     #curv_shape_by_feature = {
@@ -100,6 +135,8 @@ def make_curv_transform(x, nbscales=7, nbangles=4):
     #    for s, xc_s in enumerate(xc)
     #}
 
+    if with_phase:
+        return curv_fwd_with_phase, curv_inv, curv_shapes
     return curv_fwd, curv_inv, curv_shapes
 
 

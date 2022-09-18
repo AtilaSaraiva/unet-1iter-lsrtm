@@ -69,16 +69,17 @@ class TrainSetup(pl.LightningModule):
         metrics = {f"val_{k}": v for k, v in metrics.items()}
         self.log_dict(metrics)  #, sync_dist=True))
 
+scaler = RobustScaler()
 
 dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
-scaler_mig = MaxAbsScaler().fit(rtm_dset)
+scaler_mig = scaler.fit(rtm_dset)
 rtm_norm = scaler_mig.transform(rtm_dset)
 
 rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
 rtmRemig_dset = rtmRemig_file["m"]
-scaler_remig = MaxAbsScaler().fit(rtmRemig_dset)
+scaler_remig = scaler.fit(rtmRemig_dset)
 rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
 X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=600, patch_size=32)
@@ -109,4 +110,4 @@ trainer = pl.Trainer(max_epochs=10, limit_train_batches=50)
 trainer.fit(train_setup)
 
 modeldir = os.environ['MODELDIR']
-torch.save(model.state_dict(), modeldir + "spaceUnet.pt")
+torch.save(model.state_dict(), modeldir + "curveletUnet.pt")
