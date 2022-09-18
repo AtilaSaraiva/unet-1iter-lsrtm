@@ -58,15 +58,11 @@ class TrainSetup(pl.LightningModule):
 dataFolder = os.environ["DATADIR"]
 rtm_file = h5py.File(dataFolder + "rtm.h5")
 rtm_dset = rtm_file["m"]
-scaler_mig = scaler.fit(rtm_dset)
-rtm_norm = scaler_mig.transform(rtm_dset)
 
 rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
 rtmRemig_dset = rtmRemig_file["m"]
-scaler_remig = scaler.fit(rtmRemig_dset)
-rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
-X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=250, patch_size=32)
+X, Y = extract_patches(rtmRemig_dset, rtm_dset, patch_num=250, patch_size=32)
 
 X_train, X_test = X[:200,:,:,:], X[200:,:,:,:]
 Y_train, Y_test = Y[:200,:,:,:], Y[200:,:,:,:]
