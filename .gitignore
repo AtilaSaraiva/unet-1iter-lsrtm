@@ -136,3 +136,6 @@ data/*
 
 # Model folder
 models/*
+
+# julia folder
+.julia

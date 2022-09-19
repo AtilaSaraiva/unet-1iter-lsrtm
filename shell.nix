@@ -24,6 +24,7 @@ mkShell {
   buildInputs = [
     python-with-my-packages
     jupyter
+    julia-bin
   ];
 
   shellHooks = ''
@@ -32,5 +33,9 @@ mkShell {
     export DEVITO_LANGUAGE="openmp"
     export MODELDIR=$PWD/models/
     export DATADIR=$PWD/data/
+    export JULIA_DEPOT_PATH=$PWD/.julia
+
+    julia -e 'using Pkg; Pkg.activate("src/createInputData"); Pkg.instantiate()'
+    julia -e 'using Pkg; Pkg.activate("src/createInputData"); Pkg.instantiate()'
   '';
 }
