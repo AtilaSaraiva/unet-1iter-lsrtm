@@ -6,7 +6,7 @@ dataFolder = "../../data/"
 mkpath(dataFolder)
 
 
-function createData(v, v0, n, d, o, nsrc, dtD, timeD, muteRow)
+function createData(v, v0, n, d, o, nsrc, dtD, timeD, muteRow, modelName)
 
     dm = vec(m0 - m)
     # Setup model structure
@@ -114,13 +114,13 @@ function createData(v, v0, n, d, o, nsrc, dtD, timeD, muteRow)
     display(fig)
 
     # Save migrated image
-    h5open(dataFolder*"rtm.h5", "w") do file
+    h5open(dataFolder*"rtm_$(modelName).h5", "w") do file
         write(file, "m", rtm.data)
         write(file, "d", collect(d))
     end
 
     # Save remigrated image
-    h5open(dataFolder*"rtm_remig.h5", "w") do file
+    h5open(dataFolder*"rtm_remig_$(modelName).h5", "w") do file
         write(file, "m", rtm_remig.data)
         write(file, "d", collect(d))
     end
@@ -128,48 +128,66 @@ function createData(v, v0, n, d, o, nsrc, dtD, timeD, muteRow)
     show()
 end
 
-# # Single Layer model
+# Single Layer model
 
-# n = (300, 200)   # (x,y,z) or (x,z)
-# d = (10., 10.)
-# o = (0., 0.)
+n = (300, 200)   # (x,y,z) or (x,z)
+d = (10., 10.)
+o = (0., 0.)
 
-# # Velocity [km/s]
-# v = ones(Float32,n) .+ 0.5f0
-# v0 = ones(Float32,n) .+ 0.5f0
-# v[:,Int(round(end/2)):end] .= 3.5f0
+# Velocity [km/s]
+v = ones(Float32,n) .+ 0.5f0
+v0 = ones(Float32,n) .+ 0.5f0
+v[:,Int(round(end/2)):end] .= 3.5f0
 
-# # Save velocity field
-# h5open(dataFolder*"vel.h5", "w") do file
-    # write(file, "m", reshape(v, n))
-    # write(file, "d", collect(d))
-# end
-# imshow(v')
+# Save velocity field
+h5open(dataFolder*"vel.h5", "w") do file
+    write(file, "m", reshape(v, n))
+    write(file, "d", collect(d))
+end
+imshow(v')
 
 nsrc = 2
 timeD = 3000f0   # receiver recording time [ms]
 dtD = 2f0        # receiver sampling interval [ms]
 
-# # Slowness squared [s^2/km^2]
-# m  = (1f0 ./ v).^2
-# m0 = (1f0 ./ v0).^2
+# Slowness squared [s^2/km^2]
+m  = (1f0 ./ v).^2
+m0 = (1f0 ./ v0).^2
 
-# createData(m, m0, n, d, o, nsrc, dtD, timeD)
-
-
+createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "two_layers")
 
 
-# Load migration velocity model
+
+
+# Load marmousi model
 if ~isfile("$(JUDI.JUDI_DATA)/marmousi_model.h5")
     ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/Imaging.jl/2DLSRTM/marmousi_model.h5")
 end
 n, d, o, m0, m = read(h5open("$(JUDI.JUDI_DATA)/marmousi_model.h5", "r"), "n", "d", "o", "m0", "m")
 
-# imshow(m0')
-# show()
+nsrc = 200
+timeD = 3000f0   # receiver recording time [ms]
+dtD = 2          # receiver sampling interval [ms]
 
 n = (n[1], n[2])
 d = (d[1], d[2])
 o = (o[1], o[2])
 
-createData(m, m0, n, d, o, nsrc, dtD, timeD, 40)
+createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "marmousi")
+
+
+# Load overthrust model
+if ~isfile("$(JUDI.JUDI_DATA)/overthrust_model_2D.h5")
+    ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/WaveformInversion.jl/2DFWI/overthrust_model_2D.h5")
+end
+n, d, o, m0, m = read(h5open("$(JUDI.JUDI_DATA)/overthrust_model_2D.h5", "r"), "n", "d", "o", "m0", "m")
+
+nsrc = 200
+timeD = 3000f0   # receiver recording time [ms]
+dtD = 2          # receiver sampling interval [ms]
+
+n = (n[1], n[2])
+d = (d[1], d[2])
+o = (o[1], o[2])
+
+createData(m, m0, n, d, o, nsrc, dtD, timeD, 19, "overthrust")
