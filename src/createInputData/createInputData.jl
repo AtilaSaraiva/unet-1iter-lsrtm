@@ -157,8 +157,6 @@ m0 = (1f0 ./ v0).^2
 createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "two_layers")
 
 
-
-
 # Load marmousi model
 if ~isfile("$(JUDI.JUDI_DATA)/marmousi_model.h5")
     ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/Imaging.jl/2DLSRTM/marmousi_model.h5")
