@@ -8,4 +8,5 @@
 #SBATCH --account=cenpes-lde                   # Account of the group
 
 #NIXPKGS_ALLOW_UNFREE=1 nix-portable nix-shell --command "cd src && make"
-NIXPKGS_ALLOW_UNFREE=1 nix-portable nix-shell --command "cd src/createInputData && julia --project=. createInputData.jl"
+#NIXPKGS_ALLOW_UNFREE=1 nix-portable nix-shell --command "cd src/createInputData && julia --project=. createInputData.jl"
+NIXPKGS_ALLOW_UNFREE=1 nix-portable nix-shell --command "cd src && python space_domain_train.py"

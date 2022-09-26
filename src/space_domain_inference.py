@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 scaler = RobustScaler()
 
 dataFolder = os.environ["DATADIR"]
-rtm_file = h5py.File(dataFolder + "rtm.h5")
+rtm_file = h5py.File(dataFolder + "rtm_marmousi.h5")
 rtm_dset = rtm_file["m"]
 scaler_mig = scaler.fit(rtm_dset)
 rtm_norm = scaler_mig.transform(rtm_dset)

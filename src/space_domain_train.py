@@ -56,10 +56,10 @@ class TrainSetup(pl.LightningModule):
 
 
 dataFolder = os.environ["DATADIR"]
-rtm_file = h5py.File(dataFolder + "rtm.h5")
+rtm_file = h5py.File(dataFolder + "rtm_marmousi.h5")
 rtm_dset = rtm_file["m"]
 
-rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
+rtmRemig_file = h5py.File(dataFolder + "rtm_remig_marmousi.h5")
 rtmRemig_dset = rtmRemig_file["m"]
 
 X, Y = extract_patches(rtmRemig_dset, rtm_dset, patch_num=250, patch_size=32)
