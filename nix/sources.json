@@ -5,10 +5,10 @@
         "homepage": null,
         "owner": "AtilaSaraiva",
         "repo": "myNixPythonPackages",
-        "rev": "c269f12909b4bcf82d855098fb11e4e1818d06ff",
-        "sha256": "1rjm9ayaxxpckbscjpgpj05wpjikhm9zdvsrp7gmri21xvfp26va",
+        "rev": "27a94160af06c353e44fa07e85849678f7b874bc",
+        "sha256": "0psnzni1fhq6f544nahqf4zv3ilvs5g9ddnn9yx045c93cvdqifm",
         "type": "tarball",
-        "url": "https://github.com/AtilaSaraiva/myNixPythonPackages/archive/c269f12909b4bcf82d855098fb11e4e1818d06ff.tar.gz",
+        "url": "https://github.com/AtilaSaraiva/myNixPythonPackages/archive/27a94160af06c353e44fa07e85849678f7b874bc.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
