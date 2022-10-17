@@ -5,7 +5,6 @@ close("all")
 dataFolder = "../../data/"
 mkpath(dataFolder)
 
-
 function createData(v, v0, n, d, o, nsrc, dtD, timeD, muteRow, modelName)
 
     dm = vec(m0 - m)
@@ -146,46 +145,48 @@ h5open(dataFolder*"vel.h5", "w") do file
 end
 imshow(v')
 
-nsrc = 2
-timeD = 3000f0   # receiver recording time [ms]
-dtD = 2f0        # receiver sampling interval [ms]
+# nsrc = 50
+# timeD = 3000f0   # receiver recording time [ms]
+# dtD = 2f0        # receiver sampling interval [ms]
 
-# Slowness squared [s^2/km^2]
-m  = (1f0 ./ v).^2
-m0 = (1f0 ./ v0).^2
+# # Slowness squared [s^2/km^2]
+# m  = (1f0 ./ v).^2
+# m0 = (1f0 ./ v0).^2
 
-createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "two_layers")
-
-
-# Load marmousi model
-if ~isfile("$(JUDI.JUDI_DATA)/marmousi_model.h5")
-    ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/Imaging.jl/2DLSRTM/marmousi_model.h5")
-end
-n, d, o, m0, m = read(h5open("$(JUDI.JUDI_DATA)/marmousi_model.h5", "r"), "n", "d", "o", "m0", "m")
-
-nsrc = 200
-timeD = 3000f0   # receiver recording time [ms]
-dtD = 2          # receiver sampling interval [ms]
-
-n = (n[1], n[2])
-d = (d[1], d[2])
-o = (o[1], o[2])
-
-createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "marmousi")
+# # createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "two_layers")
 
 
-# Load overthrust model
-if ~isfile("$(JUDI.JUDI_DATA)/overthrust_model_2D.h5")
-    ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/WaveformInversion.jl/2DFWI/overthrust_model_2D.h5")
-end
-n, d, o, m0, m = read(h5open("$(JUDI.JUDI_DATA)/overthrust_model_2D.h5", "r"), "n", "d", "o", "m0", "m")
+# # Load marmousi model
+# if ~isfile("$(JUDI.JUDI_DATA)/marmousi_model.h5")
+    # ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/Imaging.jl/2DLSRTM/marmousi_model.h5")
+# end
+# n, d, o, m0, m = read(h5open("$(JUDI.JUDI_DATA)/marmousi_model.h5", "r"), "n", "d", "o", "m0", "m")
 
-nsrc = 200
-timeD = 3000f0   # receiver recording time [ms]
-dtD = 2          # receiver sampling interval [ms]
+# nsrc = 800
+# timeD = 3000f0   # receiver recording time [ms]
+# dtD = 2          # receiver sampling interval [ms]
 
-n = (n[1], n[2])
-d = (d[1], d[2])
-o = (o[1], o[2])
+# n = (n[1], n[2])
+# d = (d[1], d[2])
+# o = (o[1], o[2])
 
-createData(m, m0, n, d, o, nsrc, dtD, timeD, 19, "overthrust")
+# print(n)
+# # createData(m, m0, n, d, o, nsrc, dtD, timeD, 40, "marmousi")
+
+
+# # Load overthrust model
+# if ~isfile("$(JUDI.JUDI_DATA)/overthrust_model_2D.h5")
+    # ftp_data("ftp://slim.gatech.edu/data/SoftwareRelease/WaveformInversion.jl/2DFWI/overthrust_model_2D.h5")
+# end
+# n, d, o, m0, m = read(h5open("$(JUDI.JUDI_DATA)/overthrust_model_2D.h5", "r"), "n", "d", "o", "m0", "m")
+
+# nsrc = 400
+# timeD = 3000f0   # receiver recording time [ms]
+# dtD = 2          # receiver sampling interval [ms]
+
+# n = (n[1], n[2])
+# d = (d[1], d[2])
+# o = (o[1], o[2])
+
+# print(n)
+# # createData(m, m0, n, d, o, nsrc, dtD, timeD, 19, "overthrust")
