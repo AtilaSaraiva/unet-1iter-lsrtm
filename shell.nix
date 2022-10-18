@@ -25,6 +25,7 @@ mkShell {
     python-with-my-packages
     jupyter
     julia-bin
+    gcc
   ];
 
   shellHooks = ''
