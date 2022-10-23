@@ -139,3 +139,5 @@ models/*
 
 # julia folder
 .julia
+
+*.jld
