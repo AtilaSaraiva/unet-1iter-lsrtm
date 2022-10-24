@@ -89,7 +89,7 @@ q = judiVector(srcGeometry,wavelet)
 
 opt = Options(isic=true,    # impedance modeling
               save_data_to_disk=true,
-              file_path = file_path,  # directory for saving generated shots
+              file_path = dataFolder,  # directory for saving generated shots
               file_name = file_name
               )
 
