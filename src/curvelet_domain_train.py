@@ -95,7 +95,6 @@ test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
-#model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
 model =  CurveletFilter(curv_shapes)
 
 train_setup = TrainSetup(
