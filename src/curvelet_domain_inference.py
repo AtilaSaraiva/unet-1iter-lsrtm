@@ -11,7 +11,7 @@ from trainUnetClass import CurveletFilter, make_curv_transform, scaleThat, unsca
 scaler = RobustScaler()
 
 dataFolder = os.environ["DATADIR"]
-rtm_file = h5py.File(dataFolder + "rtm.h5")
+rtm_file = h5py.File(dataFolder + "rtm_marmousi.h5")
 rtm_dset = rtm_file["m"]
 original_shape = rtm_dset.shape
 rtm_dset = np.array(rtm_dset).reshape((1,*original_shape))

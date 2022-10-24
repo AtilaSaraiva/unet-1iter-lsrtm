@@ -72,12 +72,12 @@ class TrainSetup(pl.LightningModule):
 scaler = RobustScaler()
 
 dataFolder = os.environ["DATADIR"]
-rtm_file = h5py.File(dataFolder + "rtm.h5")
+rtm_file = h5py.File(dataFolder + "rtm_marmousi.h5")
 rtm_dset = rtm_file["m"]
 scaler_mig = scaler.fit(rtm_dset)
 rtm_norm = scaler_mig.transform(rtm_dset)
 
-rtmRemig_file = h5py.File(dataFolder + "rtm_remig.h5")
+rtmRemig_file = h5py.File(dataFolder + "rtm_remig_marmousi.h5")
 rtmRemig_dset = rtmRemig_file["m"]
 scaler_remig = scaler.fit(rtmRemig_dset)
 rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
@@ -106,7 +106,7 @@ train_setup = TrainSetup(
     learning_rate=0.005,
 )
 
-trainer = pl.Trainer(max_epochs=10, limit_train_batches=50)
+trainer = pl.Trainer(max_epochs=50, limit_train_batches=50)
 trainer.fit(train_setup)
 
 modeldir = os.environ['MODELDIR']
