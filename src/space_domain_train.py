@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 import os
 
-epochs = 1000
+epochs = 50
 scaler = RobustScaler()
 
 class TrainSetup(pl.LightningModule):
