@@ -5,43 +5,52 @@ from tiler import Tiler, Merger
 from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 from unet import UNet
 from matplotlib import pyplot as plt
+import json
 
-scaler = RobustScaler()
 
-dataFolder = os.environ["DATADIR"]
-rtm_file = h5py.File(dataFolder + "rtm_marmousi.h5")
-rtm_dset = rtm_file["m"]
-scaler_mig = scaler.fit(rtm_dset)
-rtm_norm = scaler_mig.transform(rtm_dset)
-original_shape = rtm_norm.shape
-rtm_norm = rtm_norm.reshape((1,*original_shape))
+def main(param):
+    scaler = RobustScaler()
 
-tiler = Tiler(data_shape=rtm_norm.shape,
-      tile_shape=(1, 32, 32),
-      overlap=(0,20,20),
-      channel_dimension=0)
+    dataFolder = os.environ["DATADIR"]
+    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
+    rtm_dset = rtm_file["m"]
+    scaler_mig = scaler.fit(rtm_dset)
+    rtm_norm = scaler_mig.transform(rtm_dset)
+    original_shape = rtm_norm.shape
+    rtm_norm = rtm_norm.reshape((1,*original_shape))
 
-tiles = tiler.get_all_tiles(rtm_norm)
-tiles = torch.from_numpy(tiles)
+    tileShape = (1, param["patch_size"], param["patch_size"])
+    tiler = Tiler(data_shape=rtm_norm.shape,
+          tile_shape=tileShape,
+          overlap=(0,param["overlap"],param["overlap"]),
+          channel_dimension=0)
 
-modeldir = os.environ['MODELDIR']
-model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
-model.load_state_dict(torch.load(modeldir + "spaceUnet.pt"))
+    tiles = tiler.get_all_tiles(rtm_norm)
+    tiles = torch.from_numpy(tiles)
 
-with torch.no_grad():
-    filtered_tiles = model(tiles)
+    modeldir = os.environ['MODELDIR']
+    model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
+    model.load_state_dict(torch.load(modeldir + f"spaceUnet-{param['model']}.pt"))
 
-    merger = Merger(tiler)
-    merger.add_batch(0, filtered_tiles.shape[0], filtered_tiles.numpy())
+    with torch.no_grad():
+        filtered_tiles = model(tiles)
 
-    normalized_filtered_image = merger.merge(unpad=True).reshape(original_shape)
+        merger = Merger(tiler)
+        merger.add_batch(0, filtered_tiles.shape[0], filtered_tiles.numpy())
 
-filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
+        normalized_filtered_image = merger.merge(unpad=True).reshape(original_shape)
 
-fig, ax = plt.subplots(2)
-ax[0].imshow(rtm_dset, cmap="seismic")
-ax[1].imshow(filtered_image, cmap="seismic")
-plt.show()
+    filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
 
-with h5py.File(dataFolder + "filtered_space_domain_image.h5", "w") as f:
-    f.create_dataset('m', data=filtered_image)
+    fig, ax = plt.subplots(2)
+    ax[0].imshow(rtm_dset, cmap="seismic")
+    ax[1].imshow(filtered_image, cmap="seismic")
+    plt.show()
+
+    with h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5", "w") as f:
+        f.create_dataset('m', data=filtered_image)
+
+if __name__ == "__main__":
+    with open("marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
