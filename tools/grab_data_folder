@@ -4,4 +4,8 @@
 TOPLEVEL=$(git rev-parse --show-toplevel)
 FOLDER=${TOPLEVEL##*/}
 
-rsync --progress --delete -r ogbon:~/$FOLDER/data $TOPLEVEL/
+if [ "$1" != "" ]; then
+    rsync --progress -r $1:~/$FOLDER/data $TOPLEVEL/
+else
+    echo "please input the server"
+fi
