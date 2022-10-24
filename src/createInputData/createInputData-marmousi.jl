@@ -38,6 +38,8 @@ J = judiJacobian(M, q)
 # Right-hand preconditioners (model topmute)
 Mr = judiTopmute(model0.n, 52, 10)
 
+seed!(1234)
+
 #' set up number of iterations
 niter = parse(Int, get(ENV, "NITER", "10"))
 # Default to 64, 5 for CI only with NITER=1
