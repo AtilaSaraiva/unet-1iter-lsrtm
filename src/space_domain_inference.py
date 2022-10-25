@@ -51,6 +51,6 @@ def main(param):
         f.create_dataset('m', data=filtered_image)
 
 if __name__ == "__main__":
-    with open("marmousi.json", "r") as arq:
+    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
         marmousi = json.load(arq)
     main(marmousi)

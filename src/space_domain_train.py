@@ -9,6 +9,7 @@ import pytorch_lightning as pl
 from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 import os
 import json
+from pytorch_lightning.loggers import CSVLogger
 
 scaler = RobustScaler()
 
@@ -51,7 +52,7 @@ class TrainSetup(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss = self.training_step(batch, batch_idx)
         metrics = {"loss": loss}
-        metrics = {f"val_{k}": v for k, v in metrics.items()}
+        # metrics = {f"val_{k}": v for k, v in metrics.items()}
         self.log_dict(metrics)  #, sync_dist=True))
 
 
@@ -63,7 +64,7 @@ def main(param):
     rtmRemig_file = h5py.File(dataFolder + f"rtm_remig_{param['model']}.h5")
     rtmRemig_dset = rtmRemig_file["m"]
 
-    X, Y = extract_patches(rtmRemig_dset, rtm_dset, patch_num=param["patch_num"], patch_size=32)
+    X, Y = extract_patches(rtmRemig_dset, rtm_dset, patch_num=param["patch_num"], patch_size=param["patch_size"])
 
     cutoff = int(0.8*param["patch_num"])
     X_train, X_test = X[:cutoff,:,:,:], X[cutoff:,:,:,:]
@@ -85,13 +86,18 @@ def main(param):
         weight_decay=param["weight_decay"]
     )
 
-    trainer = pl.Trainer(max_epochs=param["epochs"], limit_train_batches=50)
+    logger = CSVLogger("logs", name=f"space_domain_{param['model']}")
+    trainer = pl.Trainer(
+        max_epochs=param["epochs"],
+        limit_train_batches=50,
+        logger=logger
+    )
     trainer.fit(train_setup)
 
     modeldir = os.environ['MODELDIR']
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
 
 if __name__ == "__main__":
-    with open("marmousi.json", "r") as arq:
+    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
         marmousi = json.load(arq)
     main(marmousi)

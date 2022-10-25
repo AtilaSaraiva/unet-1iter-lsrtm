@@ -10,6 +10,8 @@ from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 from typing import Callable
 from trainUnetClass import CurveletFilter, make_curv_transform
 import os
+import json
+from pytorch_lightning.loggers import CSVLogger
 
 
 class TrainSetup(pl.LightningModule):
@@ -66,47 +68,62 @@ class TrainSetup(pl.LightningModule):
                 residue += F.mse_loss(yc[i], yc_pred[i])
         loss = residue / len(X)
         metrics = {"loss": loss}
-        metrics = {f"val_{k}": v for k, v in metrics.items()}
+        # metrics = {f"val_{k}": v for k, v in metrics.items()}
         self.log_dict(metrics)  #, sync_dist=True))
 
-scaler = RobustScaler()
 
-dataFolder = os.environ["DATADIR"]
-rtm_file = h5py.File(dataFolder + "rtm_marmousi.h5")
-rtm_dset = rtm_file["m"]
-scaler_mig = scaler.fit(rtm_dset)
-rtm_norm = scaler_mig.transform(rtm_dset)
+def main(param):
+    scaler = RobustScaler()
 
-rtmRemig_file = h5py.File(dataFolder + "rtm_remig_marmousi.h5")
-rtmRemig_dset = rtmRemig_file["m"]
-scaler_remig = scaler.fit(rtmRemig_dset)
-rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
+    dataFolder = os.environ["DATADIR"]
+    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
+    rtm_dset = rtm_file["m"]
+    scaler_mig = scaler.fit(rtm_dset)
+    rtm_norm = scaler_mig.transform(rtm_dset)
 
-X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=600, patch_size=32)
+    rtmRemig_file = h5py.File(dataFolder + f"rtm_remig_{param['model']}.h5")
+    rtmRemig_dset = rtmRemig_file["m"]
+    scaler_remig = scaler.fit(rtmRemig_dset)
+    rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
-X_train, X_test = X[:500,:,:,:], X[500:,:,:,:]
-Y_train, Y_test = Y[:500,:,:,:], Y[500:,:,:,:]
+    X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=param["patch_num"], patch_size=param["patch_size"])
 
-curv_fwd, curv_inv, curv_shapes = make_curv_transform(X[0,0])
+    cutoff = int(0.8*param["patch_num"])
+    X_train, X_test = X[:cutoff,:,:,:], X[cutoff:,:,:,:]
+    Y_train, Y_test = Y[:cutoff,:,:,:], Y[cutoff:,:,:,:]
 
-train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
-test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
+    curv_fwd, curv_inv, curv_shapes = make_curv_transform(X[0,0])
 
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
-test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
+    train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
+    test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
 
-model =  CurveletFilter(curv_shapes)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
+    test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
-train_setup = TrainSetup(
-    model,
-    transform=curv_fwd,
-    train_loader=train_loader,
-    test_loader=test_loader,
-    learning_rate=0.005,
-)
+    model =  CurveletFilter(curv_shapes)
 
-trainer = pl.Trainer(max_epochs=50, limit_train_batches=50)
-trainer.fit(train_setup)
+    train_setup = TrainSetup(
+        model,
+        transform=curv_fwd,
+        train_loader=train_loader,
+        test_loader=test_loader,
+        learning_rate=param["lr"],
+        # weight_decay=param["weight_decay"]
+    )
 
-modeldir = os.environ['MODELDIR']
-torch.save(model.state_dict(), modeldir + "curveletUnet.pt")
+    logger = CSVLogger("logs", name=f"curvelet_domain_{param['model']}")
+    trainer = pl.Trainer(
+        max_epochs=param["epochs"],
+        limit_train_batches=50
+        logger=logger
+    )
+    trainer.fit(train_setup)
+
+    modeldir = os.environ['MODELDIR']
+    torch.save(model.state_dict(), modeldir + f"curveletUnet-{param['model']}.pt")
+
+
+if __name__ == "__main__":
+    with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
