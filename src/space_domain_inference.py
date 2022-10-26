@@ -6,6 +6,7 @@ from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 from unet import UNet
 from matplotlib import pyplot as plt
 import json
+from plot import plotimage
 
 
 def main(param):
@@ -42,10 +43,13 @@ def main(param):
 
     filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
 
-    fig, ax = plt.subplots(2)
-    ax[0].imshow(rtm_dset, cmap="seismic")
-    ax[1].imshow(filtered_image, cmap="seismic")
-    plt.show()
+    # fig, ax = plt.subplots(2)
+    # ax[0].imshow(rtm_dset, cmap="seismic")
+    # ax[1].imshow(filtered_image, cmap="seismic")
+    # plt.show()
+
+    plotimage(param, rtm_file["d"], rtm_dset, name="rtm", domain="space")
+    plotimage(param, rtm_file["d"], filtered_image, name="filtered", domain="space")
 
     with h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5", "w") as f:
         f.create_dataset('m', data=filtered_image)

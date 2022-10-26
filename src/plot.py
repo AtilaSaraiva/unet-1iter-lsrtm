@@ -16,3 +16,15 @@ def plotloss(param, domain = "space"):
     figsFolder = os.environ['FIGSDIR']
     plt.savefig(figsFolder + f"space_domain_{param['model']}-loss.png", dpi=300)
     plt.show()
+
+def plotimage(param, d, image, name="rtm", domain="space"):
+    fig, ax = plt.subplots(figsize = (8, 5))
+    n = image.shape
+    extent = [0, (n[0]-1)*d[0], (n[1]-1)*d[1], 0 ]
+    ax.imshow(image, cmap="gray", extent = extent, aspect = "auto")
+    ax.set_xlabel("Offset (meters)")
+    ax.set_ylabel("Depth (meters)")
+    fig.tight_layout(pad=1.5)
+    figsFolder = os.environ['FIGSDIR']
+    plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}.png", dpi=300)
+    plt.show()
