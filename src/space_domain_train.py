@@ -1,7 +1,6 @@
 import numpy as np
 from tile_dataset import *
 import h5py
-from matplotlib import pyplot as plt
 from unet import UNet
 import torch
 import torch.nn.functional as F
@@ -10,6 +9,7 @@ from sklearn.preprocessing import RobustScaler, MaxAbsScaler
 import os
 import json
 from pytorch_lightning.loggers import CSVLogger
+from plot import plotloss
 
 scaler = RobustScaler()
 
@@ -93,6 +93,8 @@ def main(param):
         logger=logger
     )
     trainer.fit(train_setup)
+
+    plotloss(param, domain = "space")
 
     modeldir = os.environ['MODELDIR']
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
