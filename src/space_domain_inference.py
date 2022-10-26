@@ -48,8 +48,11 @@ def main(param):
     # ax[1].imshow(filtered_image, cmap="seismic")
     # plt.show()
 
-    plotimage(param, rtm_file["d"], rtm_dset, name="rtm", domain="space")
-    plotimage(param, rtm_file["d"], filtered_image, name="filtered", domain="space")
+    xlimList = [(1000, 2000), (1000, 2000)]
+    ylimList = [(6000, 7000), (4000, 5000)]
+
+    plotimage(param, rtm_file["d"], rtm_dset, name="rtm", domain="space", xlim=xlimList, ylim=ylimList)
+    plotimage(param, rtm_file["d"], filtered_image, name="filtered", domain="space", xlim=xlimList, ylim=ylimList)
 
     with h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5", "w") as f:
         f.create_dataset('m', data=filtered_image)

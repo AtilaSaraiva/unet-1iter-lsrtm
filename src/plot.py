@@ -2,6 +2,8 @@ import subprocess
 import pandas as pd
 from matplotlib import pyplot as plt
 import os
+from matplotlib import patches
+from matplotlib import colors as mcolors
 
 def plotloss(param, domain = "space"):
     output = subprocess.Popen(["ls", f"logs/{domain}_domain_{param['model']}"], stdout=subprocess.PIPE).communicate()[0]
@@ -17,7 +19,7 @@ def plotloss(param, domain = "space"):
     plt.savefig(figsFolder + f"space_domain_{param['model']}-loss.png", dpi=300)
     plt.show()
 
-def plotimage(param, d, image, name="rtm", domain="space"):
+def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None):
     fig, ax = plt.subplots(figsize = (8, 5))
     n = image.shape
     extent = [0, (n[0]-1)*d[0], (n[1]-1)*d[1], 0 ]
@@ -26,5 +28,31 @@ def plotimage(param, d, image, name="rtm", domain="space"):
     ax.set_ylabel("Depth (meters)")
     fig.tight_layout(pad=1.5)
     figsFolder = os.environ['FIGSDIR']
+    if type(xlim) == list and type(xlim[0]) == tuple and type(ylim) == list and type(ylim[0]) == tuple:
+        assert len(xlim) == len(ylim)
+        colors = list(mcolors.BASE_COLORS)
+        for xlim_i, ylim_i, i in zip(xlim, ylim, range(len(xlim))):
+            height = ylim_i[1] - ylim_i[0]
+            width  = xlim_i[1] - xlim_i[0]
+            rect = patches.Rectangle((xlim_i[0], ylim_i[0]), width, height, edgecolor=colors[i], linewidth=1, linestyle=':', facecolor='none')
+            ax.add_patch(rect)
+        plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}.png", dpi=300)
+        plt.show()
+
+        for xlim_i, ylim_i, i in zip(xlim, ylim, range(len(xlim))):
+            fig, ax = plt.subplots(figsize = (8, 5))
+            n = image.shape
+            extent = [0, (n[0]-1)*d[0], (n[1]-1)*d[1], 0 ]
+            ax.imshow(image, cmap="gray", extent = extent, aspect = "auto")
+            ax.set_xlabel("Offset (meters)")
+            ax.set_ylabel("Depth (meters)")
+            fig.tight_layout(pad=1.5)
+            figsFolder = os.environ['FIGSDIR']
+            plt.xlim(*xlim_i)
+            plt.ylim(*ylim_i)
+            plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}-window{i}.png", dpi=300)
+            plt.show()
+
+        return
     plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}.png", dpi=300)
     plt.show()
