@@ -5,6 +5,8 @@ import os
 from matplotlib import patches
 from matplotlib import colors as mcolors
 import numpy as np
+import h5py
+import json
 
 def plotloss(param, domain = "space"):
     output = subprocess.Popen(["ls", f"logs/{domain}_domain_{param['model']}"], stdout=subprocess.PIPE).communicate()[0]
@@ -56,3 +58,40 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
             plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}-window{i}.png", dpi=300)
 
         return
+
+def plottrace(param, d, images, labels, name="trace"):
+    fig, ax = plt.subplots(figsize = (8, 5))
+
+    n = images[0].shape
+    for image, label in zip(images, labels):
+        xindex = int(np.around(param['xline']/d[0]))
+        depth = np.arange(0, n[0]*d[1], d[1])
+        ax.plot(image[:, xindex], depth)
+        ax.xaxis.tick_top()
+    ax.legend(labels)
+    figsFolder = os.environ['FIGSDIR']
+    plt.savefig(figsFolder + f"{name}.png", dpi=300)
+    plt.show()
+
+def main(param):
+    dataFolder = os.environ["DATADIR"]
+    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
+    rtm_dset = rtm_file["m"]
+    filtered_file = h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5")
+    filtered_dset = filtered_file["m"]
+
+    images = [rtm_dset, filtered_dset]
+    labels = ["RTM", "Space U-Net"]
+
+    plottrace(
+        param,
+        rtm_file['d'],
+        images,
+        labels,
+        name="trace"
+    )
+
+if __name__ == "__main__":
+    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
