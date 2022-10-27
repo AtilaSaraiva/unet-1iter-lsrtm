@@ -141,3 +141,5 @@ models/*
 .julia
 
 *.jld
+
+logs
