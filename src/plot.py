@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import os
 from matplotlib import patches
 from matplotlib import colors as mcolors
+import numpy as np
 
 def plotloss(param, domain = "space"):
     output = subprocess.Popen(["ls", f"logs/{domain}_domain_{param['model']}"], stdout=subprocess.PIPE).communicate()[0]
@@ -22,7 +23,7 @@ def plotloss(param, domain = "space"):
 def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None, xline=None, cmap="gray"):
     fig, ax = plt.subplots(figsize = (8, 5))
     n = image.shape
-    extent = [0, (n[0]-1)*d[0], (n[1]-1)*d[1], 0 ]
+    extent = [0, (n[1]-1)*d[0], (n[0]-1)*d[1], 0] # d is inverted since it was defined in julia
     ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto")
     ax.set_xlabel("Offset (meters)")
     ax.set_ylabel("Depth (meters)")
@@ -45,8 +46,6 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
     if type(xlim) == list and type(xlim[0]) == list and type(ylim) == list and type(ylim[0]) == list:
         for xlim_i, ylim_i, i in zip(xlim, ylim, range(len(xlim))):
             fig, ax = plt.subplots(figsize = (8, 5))
-            n = image.shape
-            extent = [0, (n[0]-1)*d[0], (n[1]-1)*d[1], 0 ]
             ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto")
             ax.set_xlabel("Offset (meters)")
             ax.set_ylabel("Depth (meters)")
