@@ -8,6 +8,7 @@ from unet import UNet
 from matplotlib import pyplot as plt
 from trainUnetClass import CurveletFilter, make_curv_transform, scaleThat, unscaleThat
 import json
+from plot import plotimage
 
 def main(param):
     scaler = RobustScaler()
@@ -53,13 +54,29 @@ def main(param):
 
     filtered_image = merger.merge(unpad=True)
 
-    fig, ax = plt.subplots(2)
-    ax[0].imshow(rtm_dset[0], cmap="seismic")
-    ax[1].imshow(filtered_image[0], cmap="seismic")
-    plt.show()
+    plotimage(
+        param,
+        rtm_file["d"],
+        rtm_file["m"],
+        name="rtm",
+        domain="curvelet",
+        xlim=param["blocks"]["xlimList"],
+        ylim=param["blocks"]["ylimList"],
+        xline=param["xline"]
+    )
+
+    plotimage(param,
+        rtm_file["d"],
+        filtered_image[0,:,:],
+        name="filtered",
+        domain="curvelet",
+        xlim=param["blocks"]["xlimList"],
+        ylim=param["blocks"]["ylimList"],
+        xline=param["xline"]
+    )
 
     with h5py.File(dataFolder + "filtered_curvelet_domain_image-{param['model']}.h5", "w") as f:
-        f.create_dataset('m', data=filtered_image)
+        f.create_dataset('m', data=filtered_image[0,:,:])
 
 if __name__ == "__main__":
     with open("dataconf/curveletDomain/marmousi.json", "r") as arq:

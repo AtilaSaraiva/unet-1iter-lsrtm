@@ -5,5 +5,10 @@
     "patch_size": 32,
     "patch_num": 600,
     "overlap": 20,
-    "epochs": 50
+    "epochs": 10,
+    "xline" : 1500.0,
+    "blocks": {
+        "xlimList" : [[6000, 7000], [4000, 5000]],
+        "ylimList" : [[1000, 2000], [1000, 2000]]
+    }
 }

@@ -114,7 +114,7 @@ def main(param):
     logger = CSVLogger("logs", name=f"curvelet_domain_{param['model']}")
     trainer = pl.Trainer(
         max_epochs=param["epochs"],
-        limit_train_batches=50
+        limit_train_batches=50,
         logger=logger
     )
     trainer.fit(train_setup)
