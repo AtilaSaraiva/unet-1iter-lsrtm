@@ -119,6 +119,8 @@ def main(param):
     )
     trainer.fit(train_setup)
 
+    plotloss(param, domain = "curvelet")
+
     modeldir = os.environ['MODELDIR']
     torch.save(model.state_dict(), modeldir + f"curveletUnet-{param['model']}.pt")
 
