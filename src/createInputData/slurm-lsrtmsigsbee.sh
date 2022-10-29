@@ -9,5 +9,9 @@
 
 source "/opt/share/anaconda3/2022.05/etc/profile.d/conda.sh"
 conda activate judi
+export DEVITO_LOGGING=DEBUG
+export DEVITO_ARCH="gcc"
+export DEVITO_LANGUAGE="openmp"
+module load gcc/11.1.0
 
 srun julia --project=. lsrtm-sigsbee.jl
