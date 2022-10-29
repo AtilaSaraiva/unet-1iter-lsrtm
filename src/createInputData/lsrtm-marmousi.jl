@@ -53,7 +53,9 @@ Ml = judiMarineTopmute2D(30, dinv.geometry)
 # print(d_lin.data[1])
 
 lsqr_sol = zeros(Float32, prod(model0.n))
-lsqr!(lsqr_sol, Ml*Jinv*Mr, Ml*dinv; maxiter=10)
+lsqr_sols, history = lsqr!(lsqr_sol, Ml*Jinv*Mr, Ml*dinv; maxiter=10, log=true)
+
+print(history)
 
 # Save migrated image
 h5open(dataFolder*"lsrtm_$(modelName).h5", "w") do file
