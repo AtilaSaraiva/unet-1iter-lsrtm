@@ -1,6 +1,8 @@
 FROM nixos/nix
 
-COPY . /app
+COPY *.toml /app/
+COPY *.nix /app/
+COPY nix /app/nix
 
 WORKDIR /app
 
@@ -13,6 +15,4 @@ ENV JULIA_DEPOT_PATH="/julia"
 ENV MODELDIR=$PWD/models/
 ENV DATADIR=$PWD/data/
 
-RUN julia -e 'using Pkg; Pkg.activate("src/createInputData"); Pkg.instantiate()'
-RUN julia -e 'using Pkg; Pkg.activate("src/createInputData"); Pkg.instantiate()'
-
+RUN julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate()'
