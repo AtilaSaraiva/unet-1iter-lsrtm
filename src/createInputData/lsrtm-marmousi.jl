@@ -1,4 +1,4 @@
-using JUDI, SegyIO, HDF5, PyPlot, Random
+using JUDI, SegyIO, HDF5, PyPlot, Random, LinearAlgebra
 
 modelName = "marmousi"
 dataFolder = "../../data/"
