@@ -10,7 +10,7 @@ modelName = "sigsbee2A"
 mkpath(dataFolder)
 data_name="sigsbee2A_marine"
 
-using JUDI, PyPlot, JLD, SegyIO, HDF5
+using JUDI, PyPlot, JLD, SegyIO, HDF5, Random
 
 # Load Sigsbee model
 if !isfile("$(dataFolder)vel_$(modelName)-down.h5")
