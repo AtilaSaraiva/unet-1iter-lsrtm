@@ -52,10 +52,6 @@ Ml = judiMarineTopmute2D(30, dinv.geometry)
 
 # print(d_lin.data[1])
 
-rtm = adjoint(Ml*Jinv*Mr)*dinv
-d_calc = Ml*Jinv*Mr*rtm
-rtm_remig = adjoint(Ml*Jinv*Mr)*d_calc
-
 lsqr_sol = zeros(Float32, prod(model0.n))
 lsqr!(lsqr_sol, Ml*Jinv*Mr, Ml*dinv; maxiter=10)
 
