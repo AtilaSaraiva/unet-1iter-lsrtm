@@ -60,9 +60,3 @@ h5open(dataFolder*"lsrtm_$(modelName).h5", "w") do file
     write(file, "m", reshape(lsqr_sol, model0.n))
     write(file, "d", collect((d[1], d[2])))
 end
-
-# Save remigrated image
-h5open(dataFolder*"rtm_remig_$(modelName).h5", "w") do file
-    write(file, "m", rtm_remig)
-    write(file, "d", collect(d))
-end
