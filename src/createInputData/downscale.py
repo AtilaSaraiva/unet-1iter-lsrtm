@@ -2,19 +2,20 @@ import cv2
 import h5py
 import numpy as np
 import sys
+import os
 
-def main(infile, outfile fx, fy):
+def main(infile, outfile, fx, fy):
     M = h5py.File(infile, "r")
-    keys = list(f.keys())
+    keys = list(M.keys())
 
     # n is in the order of (nx, ny) so it has to be reverted to the numpy way of writing (ny, nx)
-    n = M["n"][::-1]
+    n = tuple(M["n"])[::-1]
 
     assert M["m0"].shape == n
 
-    m0_down = cv2.resize(M["m0"], (0,0), fx=fx, fy=fy, interpolation=cv2.INTER.CUBIC)
+    m0_down = cv2.resize(np.array(M["m0"]), (0,0), fx=fx, fy=fy, interpolation=cv2.INTER_CUBIC)
 
-    M_down = h5py.File(infile, "w")
+    M_down = h5py.File(outfile, "w")
     M_down.create_dataset("m0", data=m0_down)
     M_down.create_dataset("d", data=(M["d"][0]/float(fx), M["d"][1]/float(fy)))
     M_down.create_dataset("o", data=M["o"])
@@ -22,7 +23,7 @@ def main(infile, outfile fx, fy):
 
     if "dm" in keys:
         assert M["dm"].shape == n
-        dm_down = cv2.resize(M["dm"], (0,0), fx=fx, fy=fy, interpolation=cv2.INTER.CUBIC)
+        dm_down = cv2.resize(np.array(M["dm"]), (0,0), fx=fx, fy=fy, interpolation=cv2.INTER_CUBIC)
         M_down.create_dataset("dm", data=dm_down)
 
     M.close()
@@ -35,14 +36,21 @@ def getArg(key):
         if key in arg:
             return arg.split("=")[-1]
 
+def testPlot(infile, outfile)
+    M = h5py.File(infile, "r")
+    M_down = h5py.File(outfile, "w")
+
+
 if __name__ == "__main__":
     dataFolder = os.environ["DATADIR"]
 
     infile = getArg("infile")
-    fx = getArg("fx")
-    fy = getArg("fy")
+    fx = float(getArg("fx"))
+    fy = float(getArg("fy"))
 
     infile_name = infile.split("/")[-1].split(".")[0]
-    outfile = datafolder + infile_name + "-down.h5"
+    outfile = dataFolder + infile_name + "-down.h5"
 
     main(infile, outfile, fx, fy)
+
+    test = getArg("test
