@@ -36,9 +36,23 @@ def getArg(key):
         if key in arg:
             return arg.split("=")[-1]
 
-def testPlot(infile, outfile)
+def testPlot(infile, outfile):
+    import matplotlib.pyplot as plt
+
     M = h5py.File(infile, "r")
-    M_down = h5py.File(outfile, "w")
+    M_down = h5py.File(outfile, "r")
+
+    print(M_down.keys())
+
+    fig, ax = plt.subplots(2,1)
+    ax[0].imshow(M["m0"])
+    ax[1].imshow(M_down["m0"])
+    plt.show()
+
+    assert M_down["m0"].shape == tuple(M_down["n"])[::-1]
+    assert M_down["n"][0] * M_down["d"][0] - M["n"][0] * M["d"][0] <= M["d"][0]
+    assert M_down["n"][1] * M_down["d"][1] - M["n"][1] * M["d"][1] <= M["d"][1]
+    assert M_down.keys() == M.keys()
 
 
 if __name__ == "__main__":
@@ -53,4 +67,6 @@ if __name__ == "__main__":
 
     main(infile, outfile, fx, fy)
 
-    test = getArg("test
+    test = getArg("test")
+    if test == "y":
+        testPlot(infile, outfile)
