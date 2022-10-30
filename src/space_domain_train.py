@@ -21,7 +21,8 @@ class TrainSetup(pl.LightningModule):
                  test_loader: torch.utils.data.DataLoader = None,
                  val_loader: torch.utils.data.DataLoader = None,
                  learning_rate: float = 0.005,
-                 weight_decay: float = 0.5):
+                 weight_decay: float = 0.5,
+                 lagrange_multiplier: float = 0.2):
         super().__init__()
         self.model = model
         self.train_loader = train_loader
@@ -29,6 +30,7 @@ class TrainSetup(pl.LightningModule):
         self.val_loader = val_loader or self.test_loader
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
+        self.multiplier = lagrange_multiplier
 
     def train_dataloader(self):
         return self.train_loader
@@ -73,8 +75,10 @@ def main(param):
     train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
     test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
 
+    print(param)
+
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
-    test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
     model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
 
@@ -94,7 +98,7 @@ def main(param):
     )
     trainer.fit(train_setup)
 
-    plotloss(param, domain = "space")
+    # plotloss(param, domain = "space")
 
     modeldir = os.environ['MODELDIR']
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")

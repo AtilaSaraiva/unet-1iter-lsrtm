@@ -1,6 +1,6 @@
 {
     "model": "marmousi",
-    "lr": 0.001,
+    "lr": 0.005,
     "weight_decay": 0.01,
     "patch_size": 32,
     "patch_num": 250,
