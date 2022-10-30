@@ -46,13 +46,6 @@ F0 = judiModeling(model0; options=opt)
 Ps = judiProjection(src_geometry)
 J = judiJacobian(Pr*F0*Ps', q)
 
-#' set up number of iterations
-# indsrc = Vector(1:Int(floor(q.nsrc/3)))*3
-nsrc = 5 * parse(Int, get(ENV, "NITER", "$(q.nsrc ÷ 5)"))
-indsrc = randperm(q.nsrc)[1:nsrc]
-dinv = d_lin[indsrc]
-Jinv = J[indsrc]
-
 # Right-hand preconditioners (model topmute)
 idx_wb = find_water_bottom(reshape(dm, model0.n))
 Tm = judiTopmute(model0.n, idx_wb, 10)  # Mute water column
@@ -60,7 +53,37 @@ S = judiDepthScaling(model0)
 Mr = S*Tm
 
 lsqr_sol = zeros(Float32, prod(model0.n))
-lsqr!(lsqr_sol, Jinv*Mr, dinv; maxiter=10)
+
+niter=10
+fval = zeros(Float32, niter)
+# Main loop
+
+z = zeros(Float32, prod(model0.n))
+batchsize = 100
+niter = 20
+fval = zeros(Float32, niter)
+t = 2f-5
+
+for j=1:niter
+    println("Iteration: ", j)
+
+    # Compute residual and gradient
+    i = randperm(d_lin.nsrc)[1:batchsize]
+    d_sub = get_data(d_lin[i])    # load shots into memory
+
+    # Compute residual and gradient
+    r = J[i]*Mr*lsqr_sol - d_sub
+    g = Mr'*J[i]'*r
+
+    # Step size and update variable
+    fval[j] = norm(r)^2
+    isempty(t) && (global t = norm(r)^2/norm(g)^2)
+
+    # Update variables and save snapshot
+    global lsqr_sol -= t*g
+end
+
+print(fval)
 
 # Save migrated image
 h5open(dataFolder*"lsrtm_$(modelName).h5", "w") do file
