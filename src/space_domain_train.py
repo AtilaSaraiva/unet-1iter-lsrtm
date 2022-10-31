@@ -10,6 +10,7 @@ import os
 import json
 from pytorch_lightning.loggers import CSVLogger
 from plot import plotloss
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 scaler = RobustScaler()
 
@@ -95,10 +96,12 @@ def main(param):
     )
 
     logger = CSVLogger("logs", name=f"space_domain_{param['model']}")
+    early_stopping = EarlyStopping('loss', mode='min', patience=5, check_finite=True)
     trainer = pl.Trainer(
         max_epochs=param["epochs"],
         limit_train_batches=50,
-        logger=logger
+        logger=logger,
+        callbacks=[early_stopping]
     )
     trainer.fit(train_setup)
 
@@ -108,6 +111,10 @@ def main(param):
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
 
 if __name__ == "__main__":
-    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
-        marmousi = json.load(arq)
-    main(marmousi)
+    # with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
+        # marmousi = json.load(arq)
+    # main(marmousi)
+
+    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        sigsbee = json.load(arq)
+    main(sigsbee)

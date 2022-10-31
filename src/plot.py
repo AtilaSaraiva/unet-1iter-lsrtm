@@ -14,12 +14,15 @@ def plotloss(param, domain = "space"):
     metrics = pd.read_csv(f"{lastLogFolder}/metrics.csv")
     metrics = metrics.set_index("epoch")
     fig, axs = plt.subplots()
+    print(metrics["loss"])
+    # metrics["val_loss"].plot(ax=axs)
     metrics["loss"].plot(ax=axs)
     axs.set_ylabel("loss")
     axs.set_xlabel("epoch")
     axs.set_title(f"{domain.title()} domain U-Net filter loss over training")
     figsFolder = os.environ['FIGSDIR']
     plt.savefig(figsFolder + f"space_domain_{param['model']}-loss.png", dpi=300)
+    plt.show()
 
 def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None, xline=None, cmap="gray"):
     fig, ax = plt.subplots(figsize = (8, 5))
