@@ -24,6 +24,19 @@ def plotloss(param, domain = "space"):
     plt.savefig(figsFolder + f"space_domain_{param['model']}-loss.png", dpi=300)
     plt.show()
 
+def plotvel(param, d, vel):
+    fig, ax = plt.subplots(figsize = (8, 5))
+    n = vel.shape
+    extent = [0, (n[1]-1)*d[0], (n[0]-1)*d[1], 0] # d is inverted since it was defined in julia
+    ax.imshow(vel, cmap="jet", extent = extent, aspect = "auto")
+    ax.set_xlabel("Offset (meters)")
+    ax.set_ylabel("Depth (meters)")
+    fig.tight_layout(pad=1.5)
+    figsFolder = os.environ['FIGSDIR']
+    plt.savefig(figsFolder + f"vel_{param['model']}.png", dpi=300)
+    plt.show()
+
+
 def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None, xline=None, cmap="gray"):
     fig, ax = plt.subplots(figsize = (8, 5))
     n = image.shape
@@ -76,12 +89,12 @@ def plottrace(param, d, images, labels, name="trace"):
 
 def main(param):
     dataFolder = os.environ["DATADIR"]
-    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
+    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5", "r")
     rtm_dset = rtm_file["m"]
-    filtered_space_file = h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5")
+    filtered_space_file = h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5", "r")
     filtered_space_dset = filtered_space_file["m"]
 
-    filtered_curvelet_file = h5py.File(dataFolder + f"filtered_curvelet_domain_image-{param['model']}.h5")
+    filtered_curvelet_file = h5py.File(dataFolder + f"filtered_curvelet_domain_image-{param['model']}.h5", "r")
     filtered_curvelet_dset = filtered_curvelet_file["m"]
 
     images = [rtm_dset, filtered_space_dset, filtered_curvelet_dset]
@@ -95,7 +108,15 @@ def main(param):
         name="trace"
     )
 
+    vel_file = h5py.File(dataFolder + f"vel_{param['model']}.h5", "r")
+    plotvel(param, vel_file["d"], vel_file["m0"])
+
+
 if __name__ == "__main__":
     with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
         marmousi = json.load(arq)
     main(marmousi)
+
+    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        sigsbee = json.load(arq)
+    main(sigsbee)
