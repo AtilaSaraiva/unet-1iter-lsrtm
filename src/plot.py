@@ -20,7 +20,6 @@ def plotloss(param, domain = "space"):
     axs.set_title(f"{domain.title()} domain U-Net filter loss over training")
     figsFolder = os.environ['FIGSDIR']
     plt.savefig(figsFolder + f"space_domain_{param['model']}-loss.png", dpi=300)
-    plt.show()
 
 def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None, xline=None, cmap="gray"):
     fig, ax = plt.subplots(figsize = (8, 5))
@@ -43,7 +42,6 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
         ax.axvline(x=xline, color='black', linewidth=0.6, linestyle=':')
 
     plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}.png", dpi=300)
-    plt.show()
 
     if type(xlim) == list and type(xlim[0]) == list and type(ylim) == list and type(ylim[0]) == list:
         for xlim_i, ylim_i, i in zip(xlim, ylim, range(len(xlim))):
@@ -77,11 +75,14 @@ def main(param):
     dataFolder = os.environ["DATADIR"]
     rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
     rtm_dset = rtm_file["m"]
-    filtered_file = h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5")
-    filtered_dset = filtered_file["m"]
+    filtered_space_file = h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5")
+    filtered_space_dset = filtered_space_file["m"]
 
-    images = [rtm_dset, filtered_dset]
-    labels = ["RTM", "Space U-Net"]
+    filtered_curvelet_file = h5py.File(dataFolder + f"filtered_curvelet_domain_image-{param['model']}.h5")
+    filtered_curvelet_dset = filtered_curvelet_file["m"]
+
+    images = [rtm_dset, filtered_space_dset, filtered_curvelet_dset]
+    labels = ["RTM", "Space Dom. U-Net", "Curvelet Dom. U-Net"]
 
     plottrace(
         param,

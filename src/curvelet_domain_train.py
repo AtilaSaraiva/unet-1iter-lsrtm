@@ -79,15 +79,15 @@ def main(param):
     dataFolder = os.environ["DATADIR"]
     rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
     rtm_dset = rtm_file["m"]
-    scaler_mig = scaler.fit(rtm_dset)
-    rtm_norm = scaler_mig.transform(rtm_dset)
+    # scaler_mig = scaler.fit(rtm_dset)
+    # rtm_norm = scaler_mig.transform(rtm_dset)
 
     rtmRemig_file = h5py.File(dataFolder + f"rtm_remig_{param['model']}.h5")
     rtmRemig_dset = rtmRemig_file["m"]
-    scaler_remig = scaler.fit(rtmRemig_dset)
-    rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
+    # scaler_remig = scaler.fit(rtmRemig_dset)
+    # rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
-    X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=param["patch_num"], patch_size=param["patch_size"])
+    X, Y = extract_patches(rtmRemig_dset, rtm_dset, patch_num=param["patch_num"], patch_size=param["patch_size"])
 
     cutoff = int(0.8*param["patch_num"])
     X_train, X_test = X[:cutoff,:,:,:], X[cutoff:,:,:,:]
@@ -98,8 +98,8 @@ def main(param):
     train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
     test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
-    test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=20, num_workers=20)  #, prefetch_factor=3, num_workers=3)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=20, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
     model =  CurveletFilter(curv_shapes)
 

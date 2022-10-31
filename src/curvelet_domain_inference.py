@@ -54,6 +54,11 @@ def main(param):
 
     filtered_image = merger.merge(unpad=True)
 
+    fig, ax = plt.subplots(2)
+    ax[0].imshow(rtm_file["m"], cmap="gray", aspect=True)
+    ax[1].imshow(filtered_image[0,:,:], cmap="gray", aspect=True)
+    plt.show()
+
     plotimage(
         param,
         rtm_file["d"],
@@ -75,7 +80,7 @@ def main(param):
         xline=param["xline"]
     )
 
-    with h5py.File(dataFolder + "filtered_curvelet_domain_image-{param['model']}.h5", "w") as f:
+    with h5py.File(dataFolder + f"filtered_curvelet_domain_image-{param['model']}.h5", "w") as f:
         f.create_dataset('m', data=filtered_image[0,:,:])
 
 if __name__ == "__main__":

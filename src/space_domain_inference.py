@@ -43,31 +43,31 @@ def main(param):
 
     filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
 
-    # plotimage(
-        # param,
-        # rtm_file["d"],
-        # rtm_dset,
-        # name="rtm",
-        # domain="space",
-        # xlim=param["blocks"]["xlimList"],
-        # ylim=param["blocks"]["ylimList"],
-        # xline=param["xline"]
-    # )
-
-    # plotimage(param,
-        # rtm_file["d"],
-        # filtered_image,
-        # name="filtered",
-        # domain="space",
-        # xlim=param["blocks"]["xlimList"],
-        # ylim=param["blocks"]["ylimList"],
-        # xline=param["xline"]
-    # )
-
     fig, ax = plt.subplots(2)
-    ax[0].imshow(rtm_dset, cmap="seismic")
-    ax[1].imshow(filtered_image, cmap="seismic")
+    ax[0].imshow(rtm_dset, cmap="gray", aspect=True)
+    ax[1].imshow(filtered_image, cmap="gray", aspect=True)
     plt.show()
+
+    plotimage(
+        param,
+        rtm_file["d"],
+        rtm_dset,
+        name="rtm",
+        domain="space",
+        xlim=param["blocks"]["xlimList"],
+        ylim=param["blocks"]["ylimList"],
+        xline=param["xline"]
+    )
+
+    plotimage(param,
+        rtm_file["d"],
+        filtered_image,
+        name="filtered",
+        domain="space",
+        xlim=param["blocks"]["xlimList"],
+        ylim=param["blocks"]["ylimList"],
+        xline=param["xline"]
+    )
 
 
     with h5py.File(dataFolder + f"filtered_space_domain_image-{param['model']}.h5", "w") as f:

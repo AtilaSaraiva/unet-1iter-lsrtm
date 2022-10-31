@@ -22,7 +22,7 @@ class TrainSetup(pl.LightningModule):
                  val_loader: torch.utils.data.DataLoader = None,
                  learning_rate: float = 0.005,
                  weight_decay: float = 0.5,
-                 lagrange_multiplier: float = 0.2):
+                 lagrange_multiplier: float = 0.0001):
         super().__init__()
         self.model = model
         self.train_loader = train_loader
@@ -48,7 +48,7 @@ class TrainSetup(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         X, Y = batch
         Y_pred = self.model(X)
-        loss =  F.mse_loss(Y, Y_pred)
+        loss =  F.mse_loss(Y, Y_pred) #+ self.multiplier * torch.norm(Y_pred, p=1)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -62,11 +62,15 @@ def main(param):
     dataFolder = os.environ["DATADIR"]
     rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
     rtm_dset = rtm_file["m"]
+    scaler_mig = scaler.fit(rtm_dset)
+    rtm_norm = scaler_mig.transform(rtm_dset)
 
     rtmRemig_file = h5py.File(dataFolder + f"rtm_remig_{param['model']}.h5")
     rtmRemig_dset = rtmRemig_file["m"]
+    scaler_remig = scaler.fit(rtmRemig_dset)
+    rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
 
-    X, Y = extract_patches(rtmRemig_dset, rtm_dset, patch_num=param["patch_num"], patch_size=param["patch_size"])
+    X, Y = extract_patches(rtmRemig_norm, rtm_norm, patch_num=param["patch_num"], patch_size=param["patch_size"])
 
     cutoff = int(0.8*param["patch_num"])
     X_train, X_test = X[:cutoff,:,:,:], X[cutoff:,:,:,:]
@@ -98,7 +102,7 @@ def main(param):
     )
     trainer.fit(train_setup)
 
-    # plotloss(param, domain = "space")
+    plotloss(param, domain = "space")
 
     modeldir = os.environ['MODELDIR']
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
