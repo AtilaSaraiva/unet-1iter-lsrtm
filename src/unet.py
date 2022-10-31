@@ -250,6 +250,7 @@ class UNet(torch.nn.Module):
         activation=torch.nn.Tanh,
         first_activation=None,
         last_activation=torch.nn.LazyLinear,
+        patch_size : int = 32,
         norm=True,
         dropout=False,
         norm_at_start=False,
@@ -312,20 +313,20 @@ class UNet(torch.nn.Module):
 
         if last_activation:
             if last_activation == torch.nn.LazyLinear:
-                self.last_activation = last_activation
+                self.last_activation = last_activation(patch_size)
+                # self.last_activation = last_activation(32)
             else:
                 self.last_activation = last_activation()
         else:
             self.last_activation = lambda x: x
 
     def forward(self, x):
-        inputSize = x.shape[-1]
         x = self.to_base_channels(x)
         x = self.first_activation(x)
         x, old = self.global_encoder(x, return_old=True)
         x = self.global_decoder(x, old)
         x = self.to_out_channels(x)
-        x = self.last_activation(inputSize)(x)
+        x = self.last_activation(x)
         return x
 
 

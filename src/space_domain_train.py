@@ -80,7 +80,7 @@ def main(param):
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
-    model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
+    model = UNet(ndim=2, in_channels=1, out_channels=1, patch_size=param["patch_size"], norm=False)
 
     train_setup = TrainSetup(
         model,

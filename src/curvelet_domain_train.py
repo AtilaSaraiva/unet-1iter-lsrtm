@@ -12,6 +12,7 @@ from trainUnetClass import CurveletFilter, make_curv_transform
 import os
 import json
 from pytorch_lightning.loggers import CSVLogger
+from plot import plotloss
 
 
 class TrainSetup(pl.LightningModule):
