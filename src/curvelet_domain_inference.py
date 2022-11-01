@@ -100,7 +100,7 @@ def main(param):
             lsrtm_file["d"],
             lsrtm_file["m"],
             name="lsrtm",
-            domain="space",
+            domain="curvelet",
             xlim=param["blocks"]["xlimList"],
             ylim=param["blocks"]["ylimList"],
             xline=param["xline"]
