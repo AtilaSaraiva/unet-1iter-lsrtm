@@ -64,7 +64,6 @@ def main(param):
     percentiles = np.percentile(rtm_dset, [98, 2])
     vmin = np.min(percentiles)
     vmax = np.max(percentiles)
-    print(vmin, vmax)
     ax[0].imshow(rtm_dset, cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
     percentiles = np.percentile(filtered_image, [98, 2])
     vmin = np.min(percentiles)
@@ -114,6 +113,6 @@ if __name__ == "__main__":
         marmousi = json.load(arq)
     main(marmousi)
 
-    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
-        sigsbee = json.load(arq)
-    main(sigsbee)
+    # with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        # sigsbee = json.load(arq)
+    # main(sigsbee)

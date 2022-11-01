@@ -61,17 +61,27 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
     if type(xline) == float:
         ax.axvline(x=xline, color='black', linewidth=0.6, linestyle=':')
 
+    # plt.show()
     plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}.png", dpi=300)
 
     if type(xlim) == list and type(xlim[0]) == list and type(ylim) == list and type(ylim[0]) == list:
+        arrowprops = {
+          "width" : 2,
+          "headlength": 3,
+          "headwidth" : 5,
+        }
+
         for xlim_i, ylim_i, i in zip(xlim, ylim, range(len(xlim))):
             fig, ax = plt.subplots(figsize = (8, 5))
-            ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto")
+            ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto", vmin=vmin, vmax=vmax)
+            tipOfArrow = (param["arrows"][i]["x"], param["arrows"][i]["y"])
+            baseOfArrow = (tipOfArrow[0] + param["arrows"][i]["dx"], tipOfArrow[1] + param["arrows"][i]["dy"])
+            ax.annotate("", tipOfArrow, baseOfArrow, arrowprops=arrowprops)
             ax.set_xlabel("Offset (meters)")
             ax.set_ylabel("Depth (meters)")
             fig.tight_layout(pad=1.5)
             figsFolder = os.environ['FIGSDIR']
-            plt.xlim(*xlim_i)
+            plt.xlim(xlim_i)
             plt.ylim(*ylim_i)
             plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-{name}-window{i}.png", dpi=300)
 

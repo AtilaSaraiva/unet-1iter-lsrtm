@@ -81,8 +81,6 @@ def main(param):
     train_dataset = torch.utils.data.TensorDataset(X_train, Y_train)
     test_dataset = torch.utils.data.TensorDataset(X_test, Y_test)
 
-    print(param)
-
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
