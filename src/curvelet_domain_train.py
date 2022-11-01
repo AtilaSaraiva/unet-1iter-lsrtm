@@ -132,9 +132,9 @@ def main(param):
 
 
 if __name__ == "__main__":
-    # with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
-        # marmousi = json.load(arq)
-    # main(marmousi)
+    with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
 
     with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
         sigsbee = json.load(arq)

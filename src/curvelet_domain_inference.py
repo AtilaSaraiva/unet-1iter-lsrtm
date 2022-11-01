@@ -110,9 +110,9 @@ def main(param):
         f.create_dataset('m', data=filtered_image[0,:,:])
 
 if __name__ == "__main__":
-    # with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
-        # marmousi = json.load(arq)
-    # main(marmousi)
+    with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
 
     with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
         sigsbee = json.load(arq)

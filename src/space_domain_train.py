@@ -121,9 +121,9 @@ def main(param):
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
 
 if __name__ == "__main__":
-    # with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
-        # marmousi = json.load(arq)
-    # main(marmousi)
+    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
 
     with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
         sigsbee = json.load(arq)

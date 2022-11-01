@@ -114,6 +114,6 @@ if __name__ == "__main__":
         marmousi = json.load(arq)
     main(marmousi)
 
-    # with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
-        # sigsbee = json.load(arq)
-    # main(sigsbee)
+    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        sigsbee = json.load(arq)
+    main(sigsbee)
