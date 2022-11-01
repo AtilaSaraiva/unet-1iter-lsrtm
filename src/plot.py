@@ -20,7 +20,7 @@ def plotloss(param, domain = "space"):
     axs.set_xlabel("epoch")
     axs.set_title(f"{domain.title()} domain U-Net filter loss over training")
     figsFolder = os.environ['FIGSDIR']
-    plt.savefig(figsFolder + f"space_domain_{param['model']}-loss.png", dpi=300)
+    plt.savefig(figsFolder + f"{domain}_domain_{param['model']}-loss.png", dpi=300)
     plt.show()
 
 def plotvel(param, d, vel):
@@ -88,18 +88,24 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
         return
 
 def plottrace(param, d, images, labels, name="trace"):
-    fig, ax = plt.subplots(figsize = (8, 5))
+    fig, ax = plt.subplots(figsize = (3, 8))
 
     n = images[0].shape
     for image, label in zip(images, labels):
         xindex = int(np.around(param['xline']/d[0]))
         depth = np.arange(0, n[0]*d[1], d[1])
-        ax.plot(image[:, xindex], depth)
-        ax.xaxis.tick_top()
+        yindexStart = int(np.around(param["ylineStart"]/d[1]))
+        depth = depth[yindexStart:]
+        ax.plot(image[yindexStart:, xindex], depth)
+        ax.set_ylabel("Depth (meters)")
+        ax.set_xlabel("Amplitude")
+        # ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+        # ax.xaxis.tick_top()
     ax.legend(labels)
+    plt.grid()
     plt.gca().invert_yaxis()
     figsFolder = os.environ['FIGSDIR']
-    plt.savefig(figsFolder + f"{name}.png", dpi=300)
+    plt.savefig(figsFolder + f"{param['model']}-{name}.png", dpi=300)
     plt.show()
 
 def main(param):

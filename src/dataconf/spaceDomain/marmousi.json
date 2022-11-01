@@ -9,6 +9,7 @@
     "overlap": 20,
     "epochs": 50,
     "xline" : 4500.0,
+    "ylineStart" : 500,
     "blocks": {
         "xlimList" : [[5000, 7000], [1250, 2980]],
         "ylimList" : [[3165, 2000], [3000, 2050]]
