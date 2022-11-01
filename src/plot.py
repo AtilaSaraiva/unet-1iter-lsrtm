@@ -28,7 +28,8 @@ def plotvel(param, d, vel):
     fig, ax = plt.subplots(figsize = (8, 5))
     n = vel.shape
     extent = [0, (n[1]-1)*d[0], (n[0]-1)*d[1], 0] # d is inverted since it was defined in julia
-    ax.imshow(vel, cmap="jet", extent = extent, aspect = "auto")
+    pos = ax.imshow(vel, cmap="jet", extent = extent, aspect = "auto")
+    fig.colorbar(pos, ax=ax)
     ax.set_xlabel("Offset (meters)")
     ax.set_ylabel("Depth (meters)")
     fig.tight_layout(pad=1.5)
@@ -41,7 +42,8 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
     fig, ax = plt.subplots(figsize = (8, 5))
     n = image.shape
     extent = [0, (n[1]-1)*d[0], (n[0]-1)*d[1], 0] # d is inverted since it was defined in julia
-    ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto")
+    pos = ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto")
+    fig.colorbar(pos, ax=ax)
     ax.set_xlabel("Offset (meters)")
     ax.set_ylabel("Depth (meters)")
     fig.tight_layout(pad=1.5)

@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from trainUnetClass import CurveletFilter, make_curv_transform, scaleThat, unscaleThat
 import json
 from plot import plotimage
+from torchinfo import summary
 
 def main(param):
     scaler = RobustScaler()
@@ -29,7 +30,7 @@ def main(param):
     modeldir = os.environ['MODELDIR']
 
     curv_fwd, curv_inv, curv_shapes = make_curv_transform(tiler.get_tile(rtm_dset, 0), with_phase=True)
-    model =  CurveletFilter(curv_shapes)
+    model =  CurveletFilter(curv_shapes, base_channels=param["base_channels"])
     model.load_state_dict(torch.load(modeldir + f"curveletUnet-{param['model']}.pt"))
 
     merger = Merger(tiler)
@@ -44,6 +45,7 @@ def main(param):
 
             tile_amplitude = tuple([torch.from_numpy(i) for i in tile_amplitude])
 
+            summary(model, input_size = tuple(tile_amplitude.shape))
             filtered_tile_curvDomain = model(tile_amplitude)
 
             unscaleThat(filtered_tile_curvDomain, scales)
@@ -54,7 +56,13 @@ def main(param):
 
     filtered_image = merger.merge(unpad=True)
 
-    fig, ax = plt.subplots(2)
+    if param["lsrtm"]:
+        lsrtm_file = h5py.File(dataFolder + f"lsrtm_{param['model']}.h5", "r")
+        fig, ax = plt.subplots(3)
+        ax[2].imshow(lsrtm_file["m"], cmap="gray", aspect=True)
+    else:
+        fig, ax = plt.subplots(2)
+
     ax[0].imshow(rtm_file["m"], cmap="gray", aspect=True)
     ax[1].imshow(filtered_image[0,:,:], cmap="gray", aspect=True)
     plt.show()
@@ -80,10 +88,25 @@ def main(param):
         xline=param["xline"]
     )
 
+    if param["lsrtm"]:
+        plotimage(param,
+            lsrtm_file["d"],
+            lsrtm_file["m"],
+            name="lsrtm",
+            domain="space",
+            xlim=param["blocks"]["xlimList"],
+            ylim=param["blocks"]["ylimList"],
+            xline=param["xline"]
+        )
+
     with h5py.File(dataFolder + f"filtered_curvelet_domain_image-{param['model']}.h5", "w") as f:
         f.create_dataset('m', data=filtered_image[0,:,:])
 
 if __name__ == "__main__":
-    with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
-        marmousi = json.load(arq)
-    main(marmousi)
+    # with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
+        # marmousi = json.load(arq)
+    # main(marmousi)
+
+    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        sigsbee = json.load(arq)
+    main(sigsbee)

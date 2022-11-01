@@ -18,6 +18,7 @@ let
     scikit-learn
     pandas
     opencv4
+    torchinfo
     # other python packages you want
   ];
   python-with-my-packages = python3.withPackages my-python-packages;

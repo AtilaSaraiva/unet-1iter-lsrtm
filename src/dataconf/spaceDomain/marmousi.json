@@ -5,6 +5,7 @@
     "weight_decay": 0.01,
     "patch_size": 32,
     "patch_num": 600,
+    "base_channels": 8,
     "overlap": 20,
     "epochs": 10,
     "xline" : 1500.0,

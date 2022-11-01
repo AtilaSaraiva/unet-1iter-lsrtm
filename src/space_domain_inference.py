@@ -7,13 +7,14 @@ from unet import UNet
 from matplotlib import pyplot as plt
 import json
 from plot import plotimage
+from torchinfo import summary
 
 
 def main(param):
     scaler = RobustScaler()
 
     dataFolder = os.environ["DATADIR"]
-    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
+    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5", "r")
     rtm_dset = rtm_file["m"]
     scaler_mig = scaler.fit(rtm_dset)
     rtm_norm = scaler_mig.transform(rtm_dset)
@@ -30,10 +31,18 @@ def main(param):
     tiles = torch.from_numpy(tiles)
 
     modeldir = os.environ['MODELDIR']
-    model = UNet(ndim=2, in_channels=1, out_channels=1, norm=False)
+    model = UNet(
+        ndim=2,
+        in_channels=1,
+        out_channels=1,
+        patch_size=param["patch_size"],
+        base_channels=param["base_channels"],
+        norm=False
+    )
     model.load_state_dict(torch.load(modeldir + f"spaceUnet-{param['model']}.pt"))
 
     with torch.no_grad():
+        summary(model, input_size = tuple(tiles.shape))
         filtered_tiles = model(tiles)
 
         merger = Merger(tiler)
@@ -44,7 +53,7 @@ def main(param):
     filtered_image = scaler_mig.inverse_transform(normalized_filtered_image)
 
     if param["lsrtm"]:
-        lsrtm_file = h5py.File(dataFolder + f"lsrtm_{param['model']}.h5")
+        lsrtm_file = h5py.File(dataFolder + f"lsrtm_{param['model']}.h5", "r")
         fig, ax = plt.subplots(3)
         ax[2].imshow(lsrtm_file["m"], cmap="gray", aspect=True)
     else:
@@ -95,6 +104,6 @@ if __name__ == "__main__":
         marmousi = json.load(arq)
     main(marmousi)
 
-    # with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
-        # sigsbee = json.load(arq)
-    # main(sigsbee)
+    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        sigsbee = json.load(arq)
+    main(sigsbee)

@@ -61,12 +61,12 @@ class TrainSetup(pl.LightningModule):
 
 def main(param):
     dataFolder = os.environ["DATADIR"]
-    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5")
+    rtm_file = h5py.File(dataFolder + f"rtm_{param['model']}.h5", "r")
     rtm_dset = rtm_file["m"]
     scaler_mig = scaler.fit(rtm_dset)
     rtm_norm = scaler_mig.transform(rtm_dset)
 
-    rtmRemig_file = h5py.File(dataFolder + f"rtm_remig_{param['model']}.h5")
+    rtmRemig_file = h5py.File(dataFolder + f"rtm_remig_{param['model']}.h5", "r")
     rtmRemig_dset = rtmRemig_file["m"]
     scaler_remig = scaler.fit(rtmRemig_dset)
     rtmRemig_norm = scaler_remig.transform(rtmRemig_dset)
@@ -85,7 +85,14 @@ def main(param):
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=5, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
-    model = UNet(ndim=2, in_channels=1, out_channels=1, patch_size=param["patch_size"], norm=False)
+    model = UNet(
+        ndim=2,
+        in_channels=1,
+        out_channels=1,
+        patch_size=param["patch_size"],
+        base_channels=param["base_channels"],
+        norm=False
+    )
 
     train_setup = TrainSetup(
         model,
@@ -111,9 +118,9 @@ def main(param):
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
 
 if __name__ == "__main__":
-    # with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
-        # marmousi = json.load(arq)
-    # main(marmousi)
+    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
+        marmousi = json.load(arq)
+    main(marmousi)
 
     with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
         sigsbee = json.load(arq)

@@ -4,6 +4,7 @@
     "lr": 0.002,
     "weight_decay": 0.01,
     "patch_size": 64,
+    "base_channels": 16,
     "patch_num": 350,
     "overlap": 20,
     "epochs": 10,

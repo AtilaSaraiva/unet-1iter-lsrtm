@@ -13,7 +13,7 @@ import os
 import json
 from pytorch_lightning.loggers import CSVLogger
 from plot import plotloss
-
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 class TrainSetup(pl.LightningModule):
 
@@ -101,7 +101,7 @@ def main(param):
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=20, num_workers=20)  #, prefetch_factor=3, num_workers=3)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=20, num_workers=20)  #, prefetch_factor=3, num_workers=3)
 
-    model =  CurveletFilter(curv_shapes)
+    model =  CurveletFilter(curv_shapes, base_channels=param["base_channels"])
 
     train_setup = TrainSetup(
         model,
@@ -113,10 +113,12 @@ def main(param):
     )
 
     logger = CSVLogger("logs", name=f"curvelet_domain_{param['model']}")
+    early_stopping = EarlyStopping('loss', mode='min', patience=5, check_finite=True)
     trainer = pl.Trainer(
         max_epochs=param["epochs"],
         limit_train_batches=50,
-        logger=logger
+        logger=logger,
+        callbacks=[early_stopping]
     )
     trainer.fit(train_setup)
 
@@ -127,6 +129,10 @@ def main(param):
 
 
 if __name__ == "__main__":
-    with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
-        marmousi = json.load(arq)
-    main(marmousi)
+    # with open("dataconf/curveletDomain/marmousi.json", "r") as arq:
+        # marmousi = json.load(arq)
+    # main(marmousi)
+
+    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        sigsbee = json.load(arq)
+    main(sigsbee)
