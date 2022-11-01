@@ -11,6 +11,7 @@ import json
 from pytorch_lightning.loggers import CSVLogger
 from plot import plotloss
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from torchinfo import summary
 
 scaler = RobustScaler()
 
@@ -94,6 +95,8 @@ def main(param):
         norm=False
     )
 
+    summary(model, input_size = tuple(X_train.shape))
+
     train_setup = TrainSetup(
         model,
         train_loader=train_loader,
@@ -118,9 +121,9 @@ def main(param):
     torch.save(model.state_dict(), modeldir + f"spaceUnet-{param['model']}.pt")
 
 if __name__ == "__main__":
-    with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
-        marmousi = json.load(arq)
-    main(marmousi)
+    # with open("dataconf/spaceDomain/marmousi.json", "r") as arq:
+        # marmousi = json.load(arq)
+    # main(marmousi)
 
     with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
         sigsbee = json.load(arq)

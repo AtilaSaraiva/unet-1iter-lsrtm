@@ -14,6 +14,7 @@ import json
 from pytorch_lightning.loggers import CSVLogger
 from plot import plotloss
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from torchinfo import summary
 
 class TrainSetup(pl.LightningModule):
 
@@ -111,6 +112,8 @@ def main(param):
         learning_rate=param["lr"],
         # weight_decay=param["weight_decay"]
     )
+
+    # summary(model, input_size = tuple(X_train.shape))
 
     logger = CSVLogger("logs", name=f"curvelet_domain_{param['model']}")
     early_stopping = EarlyStopping('loss', mode='min', patience=5, check_finite=True)

@@ -41,7 +41,10 @@ def plotimage(param, d, image, name="rtm", domain="space", xlim=None, ylim=None,
     fig, ax = plt.subplots(figsize = (8, 5))
     n = image.shape
     extent = [0, (n[1]-1)*d[0], (n[0]-1)*d[1], 0] # d is inverted since it was defined in julia
-    pos = ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto")
+    percentiles = np.percentile(image, [98, 2])
+    vmin = np.min(percentiles)
+    vmax = np.max(percentiles)
+    pos = ax.imshow(image, cmap=cmap, extent = extent, aspect = "auto", vmin=vmin, vmax=vmax)
     fig.colorbar(pos, ax=ax)
     ax.set_xlabel("Offset (meters)")
     ax.set_ylabel("Depth (meters)")

@@ -9,7 +9,6 @@ from matplotlib import pyplot as plt
 from trainUnetClass import CurveletFilter, make_curv_transform, scaleThat, unscaleThat
 import json
 from plot import plotimage
-from torchinfo import summary
 
 def main(param):
     scaler = RobustScaler()
@@ -45,7 +44,6 @@ def main(param):
 
             tile_amplitude = tuple([torch.from_numpy(i) for i in tile_amplitude])
 
-            summary(model, input_size = tuple(tile_amplitude.shape))
             filtered_tile_curvDomain = model(tile_amplitude)
 
             unscaleThat(filtered_tile_curvDomain, scales)
@@ -59,12 +57,21 @@ def main(param):
     if param["lsrtm"]:
         lsrtm_file = h5py.File(dataFolder + f"lsrtm_{param['model']}.h5", "r")
         fig, ax = plt.subplots(3)
-        ax[2].imshow(lsrtm_file["m"], cmap="gray", aspect=True)
+        percentiles = np.percentile(lsrtm_file["m"], [98, 2])
+        vmin = np.min(percentiles)
+        vmax = np.max(percentiles)
+        ax[2].imshow(lsrtm_file["m"], cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
     else:
         fig, ax = plt.subplots(2)
 
-    ax[0].imshow(rtm_file["m"], cmap="gray", aspect=True)
-    ax[1].imshow(filtered_image[0,:,:], cmap="gray", aspect=True)
+    percentiles = np.percentile(rtm_file["m"], [98, 2])
+    vmin = np.min(percentiles)
+    vmax = np.max(percentiles)
+    ax[0].imshow(rtm_file["m"], cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
+    percentiles = np.percentile(filtered_image[0,:,:], [98, 2])
+    vmin = np.min(percentiles)
+    vmax = np.max(percentiles)
+    ax[1].imshow(filtered_image[0,:,:], cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
     plt.show()
 
     plotimage(

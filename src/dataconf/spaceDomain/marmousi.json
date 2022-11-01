@@ -1,13 +1,13 @@
 {
     "model": "marmousi",
     "lsrtm": true,
-    "lr": 0.001,
+    "lr": 0.0006,
     "weight_decay": 0.01,
     "patch_size": 32,
     "patch_num": 600,
     "base_channels": 8,
     "overlap": 20,
-    "epochs": 10,
+    "epochs": 50,
     "xline" : 1500.0,
     "blocks": {
         "xlimList" : [[6000, 7000], [4000, 5000]],

@@ -7,7 +7,7 @@ from unet import UNet
 from matplotlib import pyplot as plt
 import json
 from plot import plotimage
-from torchinfo import summary
+import numpy as np
 
 
 def main(param):
@@ -42,7 +42,6 @@ def main(param):
     model.load_state_dict(torch.load(modeldir + f"spaceUnet-{param['model']}.pt"))
 
     with torch.no_grad():
-        summary(model, input_size = tuple(tiles.shape))
         filtered_tiles = model(tiles)
 
         merger = Merger(tiler)
@@ -54,13 +53,24 @@ def main(param):
 
     if param["lsrtm"]:
         lsrtm_file = h5py.File(dataFolder + f"lsrtm_{param['model']}.h5", "r")
+        percentiles = np.percentile(lsrtm_file["m"], [98, 2])
+        vmin = np.min(percentiles)
+        vmax = np.max(percentiles)
         fig, ax = plt.subplots(3)
-        ax[2].imshow(lsrtm_file["m"], cmap="gray", aspect=True)
+        ax[2].imshow(lsrtm_file["m"], cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
     else:
         fig, ax = plt.subplots(2)
 
-    ax[0].imshow(rtm_dset, cmap="gray", aspect=True)
-    ax[1].imshow(filtered_image, cmap="gray", aspect=True)
+    percentiles = np.percentile(rtm_dset, [98, 2])
+    vmin = np.min(percentiles)
+    vmax = np.max(percentiles)
+    print(vmin, vmax)
+    ax[0].imshow(rtm_dset, cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
+    percentiles = np.percentile(filtered_image, [98, 2])
+    vmin = np.min(percentiles)
+    vmax = np.max(percentiles)
+    print(vmin, vmax)
+    ax[1].imshow(filtered_image, cmap="gray", aspect=True, vmin=vmin, vmax=vmax)
     plt.show()
 
     plotimage(
@@ -104,6 +114,6 @@ if __name__ == "__main__":
         marmousi = json.load(arq)
     main(marmousi)
 
-    with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
-        sigsbee = json.load(arq)
-    main(sigsbee)
+    # with open("dataconf/spaceDomain/sigsbee.json", "r") as arq:
+        # sigsbee = json.load(arq)
+    # main(sigsbee)
