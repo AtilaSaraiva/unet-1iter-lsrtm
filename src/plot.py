@@ -15,7 +15,6 @@ def plotloss(param, domain = "space"):
     metrics = metrics.set_index("epoch")
     fig, axs = plt.subplots()
     print(metrics["loss"])
-    # metrics["val_loss"].plot(ax=axs)
     metrics["loss"].plot(ax=axs)
     axs.set_ylabel("loss")
     axs.set_xlabel("epoch")
@@ -85,6 +84,7 @@ def plottrace(param, d, images, labels, name="trace"):
         ax.plot(image[:, xindex], depth)
         ax.xaxis.tick_top()
     ax.legend(labels)
+    plt.gca().invert_yaxis()
     figsFolder = os.environ['FIGSDIR']
     plt.savefig(figsFolder + f"{name}.png", dpi=300)
     plt.show()
