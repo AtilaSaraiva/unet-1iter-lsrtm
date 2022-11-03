@@ -137,7 +137,7 @@ class MultiScaleEncoder(torch.nn.Module):
         self,
         ndim=1,
         in_channels=1,
-        nscales=5,
+        nscales=4,
         nconvs_by_scale=2,
         kernel_size=3,
         activation=None,
@@ -243,13 +243,14 @@ class UNet(torch.nn.Module):
         ndim=1,
         in_channels=1,
         out_channels=1,
-        nscales=5,
+        nscales=4,
         nconvs_by_scale=2,
         base_channels=8,
         kernel_size=3,
         activation=torch.nn.Tanh,
         first_activation=None,
         last_activation=torch.nn.LazyLinear,
+        patch_size : int = 32,
         norm=True,
         dropout=False,
         norm_at_start=False,
@@ -312,7 +313,8 @@ class UNet(torch.nn.Module):
 
         if last_activation:
             if last_activation == torch.nn.LazyLinear:
-                self.last_activation = last_activation(32)
+                self.last_activation = last_activation(patch_size)
+                # self.last_activation = last_activation(32)
             else:
                 self.last_activation = last_activation()
         else:

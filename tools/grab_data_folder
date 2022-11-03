@@ -1,0 +1,11 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i sh -p rsync git
+
+TOPLEVEL=$(git rev-parse --show-toplevel)
+FOLDER=${TOPLEVEL##*/}
+
+if [ "$1" != "" ]; then
+    rsync --progress -r $1:~/$FOLDER/data $TOPLEVEL/
+else
+    echo "please input the server"
+fi

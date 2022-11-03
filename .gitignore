@@ -136,3 +136,10 @@ data/*
 
 # Model folder
 models/*
+
+# julia folder
+.julia
+
+*.jld
+
+logs

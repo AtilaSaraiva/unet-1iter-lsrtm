@@ -1,0 +1,31 @@
+{
+    "model": "sigsbee2A",
+    "lsrtm": false,
+    "lr": 0.00005,
+    "weight_decay": 0.001,
+    "patch_size": 32,
+    "base_channels": 64,
+    "patch_num": 1000,
+    "overlap": 20,
+    "epochs": 200,
+    "xline" : 13319.76,
+    "ylineStart" : 4800,
+    "blocks": {
+        "xlimList" : [[9509, 17922.24], [12954, 18440.4]],
+        "ylimList" : [[9144, 7109], [5334.0, 2095.5]]
+    },
+    "arrows": [
+        {
+            "x" : 16474.44,
+            "dx" : 150,
+            "y" : 8411.48,
+            "dy" : 150
+        },
+        {
+            "x" : 0,
+            "dx" : 0,
+            "y" : 0,
+            "dy" : 0
+        }
+    ]
+}
